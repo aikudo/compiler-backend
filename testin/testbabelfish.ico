@@ -1,0 +1,128 @@
+#!/usr/local/bin/perl -w
+
+use IO::Socket;
+
+$BABELFISH_HOST = "babelfish.altavista.com:80";
+$BABELFISH_CGI = "/cgi-bin/translate?";
+$MANPAGE = <<__END_HELP__;
+ 
+NAME
+   babelfish - Translate from one language into another.
+
+SYNOPSIS
+   babelfish [-options] [filename...]
+
+DESCRIPTION
+   Reads sentences from filenames or stdin, as per <>, and writes
+   the translation to the standard output.  Uses the URL
+      http://$BABELFISH_HOST$BABELFISH_CGI 
+   in order to do the translation.
+
+OPTIONS
+
+   -m          Prints out this cat page and translation options.
+   -h, -u      Same as -m, for man, help, or usage.
+   -s          Silent mode, only prints translated text.
+   -v          Verbose mode, prints HTTP interaction messages.
+   -V          Prints HTML page in addition to -v.
+   -(option)   The translation option, default -en_fr.
+
+BUGS
+
+   Try using a pipe to run babelfish into babelfish.  For example:
+      babelfish -s -en_fr | babelfish -s -fr_en
+
+__END_HELP__
+
+&main;
+exit 0;
+
+sub main{
+   $Language = "en_fr";
+   while( @ARGV && $ARGV[0] =~ m/^-/ ){
+      my( $option ) = shift @ARGV;
+      $option =~ s/^-//;
+      if( $option =~ m/_/ ){
+         $Language = $option;
+      }else{
+         $Options{ $& } = 1 while $option =~ s/.//;
+      };
+   };
+   $Options{'v'} = 1 if $Options{'V'};
+   if( $Options{'m'} || $Options{'h'} || $Options{'u'} ){
+      print $MANPAGE;
+      print "TRANSLATION OPTIONS\n\n";
+      $page = &get_page();
+      while( $page =~ s{.*?<option value=(.*?)>(.*?)</option>}{}msi ){
+         my ( $option, $description ) = ( $1, $2 );
+         $option =~ s/"//g;
+         printf "   %-12s%s\n", "-$option", $description;
+      };
+      exit 0;
+   };
+   my( $form ) = "doit=done&lp=$Language&urltext=";
+   &do_translation( $form );
+};
+
+sub get_page{
+   my( $form ) = @_;
+   $form = "" unless $form;
+   $contentlength = "Content-length: " . length( $form );
+   my( $babelfish );
+   $babelfish = IO::Socket::INET->new(
+                Proto=>"tcp",
+                PeerAddr=> $BABELFISH_HOST )
+   || die "$0: $babelfish: $!";
+   print "Connecting to: $BABELFISH_HOST\n" if $Options{'v'};
+   $babelfish->autoflush( 1 );
+   $post = "POST $BABELFISH_CGI HTTP/1.0\n$contentlength\n\n$form\n\n";
+   print "Sending:\n$post" if $Options{'v'};
+   $babelfish->print( $post );
+   my( $page ) = join( '', $babelfish->getlines );
+   print "Received:\n$page" if $Options{'V'};
+   close $babelfish;
+   return $page;
+};
+
+sub do_translation{
+   my( $form ) = @_;
+   for(;;){
+      my( $original ) = "";
+      my( $newline ) = "";
+      while( defined( $newline = <> )){
+         last if $newline =~ m/^\s*$/msi;
+         $original .= $newline;
+      };
+      if( $original =~ m/\S/ ){
+         print_text( "Original text:", $original ) unless $Options{'s'};
+         $original = &encode( $original );
+         my( $translated ) = get_page( $form . $original );
+         $translated =~ s{.*<!-- Begin Page Content -->}{}msi;
+         $translated =~ s{<form.*}{}msi;
+         $translated =~ s{<a [^>]*>.*?</a>}{}msig;
+         $translated =~ s{<[^>]*?>}{}msig;
+         print_text( "Translated text:", $translated );
+      };
+      last unless defined $newline;
+   };
+};
+
+sub print_text{
+   my( $title, $text ) = @_;
+   print "$title\n" unless $Options{'s'};
+   $text =~ s/^\n*//mg;
+   $text =~ s/\n\n+/\n\n/mg;
+   $text =~ s/^/   /mg unless $Options{'s'};;
+   $text =~ s/\s*$/\n/g;
+   print $text;
+};
+
+sub encode{
+   my( $text ) = @_;
+   $text =~ s/\s+$//gmsi;
+   $text =~ s/[^\s\w.!*'()-]/sprintf("%%%02X",ord($&))/gmsie;
+   $text =~ s/ /\+/gmsi;
+   $text =~ s/\s/sprintf("%%%02X",ord($&))/gmsie;
+   return $text;
+};
+

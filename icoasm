@@ -1,0 +1,2296 @@
+#!/usr/bin/perl
+####!/usr/bin/perl -w
+
+## $Id: icoasm,v 1.18 2008/06/09 19:42:06 linh Exp $
+###use strict;
+use Getopt::Std;
+use File::Spec;
+
+my %options=();
+getopts("DLYPVS",\%options);
+
+
+for $i (0..31){
+   $register_table[$i] = -100;
+}
+
+
+$source_line_number=1;
+$options{P} = ($options{P}) ? $options{P} : $options{V};
+
+FILE: foreach (@ARGV) {
+  open (FILE,  $_) || ((warn "Can't open file $_\n"), next FILE);
+  
+  ( $volume, $directories, $file ) = File::Spec->splitpath($_);
+  $_ = $file; s/\.ico$/\.ipt/;
+  open (FILEOUT,  ">$_") || 
+      ((warn "Can't open file $_\n"), next FILE) if $options{P};
+
+  $_ = $file; s/\.ico$/\.isy/;
+  open (FH_ISY,  ">$_") || 
+      ((warn "Can't open file $_\n"), next FILE) ;
+      #if $options{S};
+
+  $_ = $file; s/\.ico$/\.s/;
+  open (NEW_FH_ASM,  ">$_") || 
+      ((warn "Can't open file $_\n"), next FILE) ;
+
+  my @source_list = ();
+  while (<FILE>){ 
+      push (@source_list,$_);
+      parser($_);
+      $source_line_number +=1;
+  }
+  #printout() if $options{P};
+  close(FILE);
+  close(FILEOUT)  if $options{P};
+}
+
+$func_list = []; 
+
+sub parser {
+   my $line = shift;
+   my @items =();
+   $line =~ s/#.*// ; ## remove the comment. 
+   $line =~ s/^\s+// ; ## remove prefix whitespaces. 
+   chomp($line); ## remove new line character.
+
+   return if (length $line <2) ; #can't be a line of ASM
+
+   $line =~ s/\*/\(\*\)/g;  ##address and pointer
+   $line =~ s/\&/\(\&\)/g;
+
+   @items = split(/\s+/,$line);
+
+   if ($items[0] =~ m/.*:/ ) {
+      $items[0]=~ s/://;
+      $label = $items[0];
+      $opcode = $items[1];
+      $oprand1 = $items[2];
+      $oprand2 = $items[3];
+      $oprand3 = $items[4];
+      }else{
+      $label = "";
+      $opcode = $items[0];
+      $oprand1 = $items[1];
+      $oprand2 = $items[2];
+      $oprand3 = $items[3];
+   }
+   $ico_statm = {}; #new ico statement
+#   $ico_statm = { "LABEL" => $label, "OPCODE" => $opcode, 
+#      "OPR1" => $operand1,
+#      "OPR2" => $operand2,
+#      "OPR3" => $operand3,
+#      "LINE" => $source_line_number };
+
+   $ico_statm -> {"LABEL"} = $label;
+   $ico_statm -> {"OPCODE"} = $opcode;
+   $ico_statm -> {"OPR1"} = $oprand1;
+   $ico_statm -> {"OPR2"} = $oprand2;
+   $ico_statm -> {"OPR3"} = $oprand3;
+   $ico_statm -> {"LINE"} = $source_line_number;
+   push (@icolist, $ico_statm);
+
+}
+
+fix_icolist();
+#remove label by itself problem
+sub fix_icolist{
+   for $i ( 0 .. $#icolist ) {
+      $label =  $icolist[$i]{"LABEL"};
+      $opcode =  $icolist[$i]{"OPCODE"};
+      if( $label && !$opcode && 
+         ($icolist[$i+1]{"OPCODE"} =~ /fnc/)){
+         $savelabel= $label;
+         $icolist[$i+1] {"LABEL"} = $savelabel;
+         delete $icolist[$i];
+      }
+   }
+}
+
+#printout();
+
+sub printout{
+   for $i ( 0 .. $#icolist ) {
+      $result = printf ("%-10s %-6s %s %s %s\n", 
+         $icolist[$i]{"LABEL"},
+         $icolist[$i]{"OPCODE"},
+         $icolist[$i]{"OPR1"},
+         $icolist[$i]{"OPR2"},
+         $icolist[$i]{"OPR3"});
+      print FILEOUT $result;
+   }
+}
+
+%sizeoftype = ("int", 4,
+         "char", 1,
+         "char[]", 1,
+         "char*", 4,
+         "int*", 4,
+         "int[]", 4,
+         "void", 4,
+         "void*", 4);
+
+# building a list of functions
+
+$i=0;
+#$func_list = []; 
+while ($i< $#icolist){
+   $numparam =0;
+   if ( $icolist[$i]{"LABEL"} && 
+      ($icolist[$i]{"OPCODE"} eq "fnc" |
+      $icolist[$i+1]{"OPCODE"} eq "fnc" ) ) {
+      ### is in a function
+      $numparam = ($icolist[$i]{"OPCODE"} eq "fnc") ? 
+          $icolist[$i]{"OPR1"} :  $icolist[$i+1]{"OPR1"};
+      $func_name = $icolist[$i]{"LABEL"};
+      $returntype = ($icolist[$i]{"OPCODE"} eq "fnc") ? 
+          $icolist[$i]{"OPR2"} :  $icolist[$i+1]{"OPR2"};
+
+      
+      $param_list = [];
+      $local_list = [];
+      $tmp_list = [];
+      $instr_list= [];
+      $localaddr = 0;
+      $param_size = 0;
+      $local_size = 0;
+      $temp_size = 0;
+      while ( $icolist[$i]{"OPCODE"} ne "end" ){ 
+      push @$instr_list, $icolist[$i] ; #add ico_statm to func
+      #tranverse the function
+         if($icolist[$i]{"OPCODE"} eq "prm" ){ 
+            $param_node = storage_node();
+
+            $parnum =  $icolist[$i]{"OPR1"};
+            $disp = 4 * $parnum + 68;
+            $param_node -> {"SCOPE"} = "P";
+            $param_node -> {"DIM"} = "?";
+            $param_node -> {"DISP"} = $disp; 
+            $param_node -> {"REG"}= ($parnum < 6) ? "%i" . $parnum : "?";
+
+            $param_size += $param_node->{"SIZE"} ;
+
+            push @$param_list, $param_node;
+
+         }
+
+         if($icolist[$i]{"OPCODE"} eq "loc" ){ 
+            $local_node = storage_node();
+            $disp = $localaddr - $local_node -> {"TSIZE"};
+            $localaddr = $disp;
+            $local_node -> {"DISP"} = $disp;
+            $local_size +=  $local_node->{"SIZE"} * $icolist[$i]{"OPR1"};
+            push @$local_list, $local_node;
+         }
+
+         if($icolist[$i]{"OPCODE"} eq "tmp" ){ 
+            $tmp_node = storage_node();
+            $tmp_node -> {"SCOPE"} = "T";
+            $tmp_node -> {"BASE"} = "?";
+            $tmp_node -> {"REG"} = "t";
+            $temp_size +=  $tmp_node->{"SIZE"} * $icolist[$i]{"OPR1"};
+            push @$tmp_list, $tmp_node;
+         }
+
+   
+      $i += 1; ### next line within this same function
+      } 
+
+      #print_storage_node($param_list);
+      #print_storage_node($local_list);
+      #print_storage_node($tmp_list);
+
+
+      $excessparam = ($numparam -6 > 0 )?  $numparam -6 : 0;
+      $frame_size  = $local_size + 92 + $excessparam * 4;
+      $frame_size += ($frame_size % 8); ## round up to 8 multiple
+
+      $func_node = {};
+      $func_node -> {"NAME"} = $func_name;
+      $func_node -> {"PARAM_NUM"} = $numparam;
+      $func_node -> {"PARAM_LIST"} = $param_list;
+      $func_node -> {"LOCAL_LIST"} = $local_list;
+      $func_node -> {"TMP_LIST"} = $tmp_list;
+      $func_node -> {"INSTR_PTR"} = $instr_list;
+      $func_node -> {"RETURN"} = $returntype;
+      $func_node -> {"PARAM"} = $param_size;
+      $func_node -> {"LOCAL"} =  $local_size;
+      $func_node -> {"TEMP"} = $temp_size;
+      $func_node -> {"FRAME"} = $frame_size;
+
+      #printf("PARALIST IS %d\n",  $#paralist);
+      push @$func_list, $func_node;
+
+   }
+   $i += 1;
+}
+
+## second scan for the globals and strings
+
+$i=0;
+$glo_list = [];   #global variable list
+$str_list = [];   #string list
+while ($i< $#icolist + 1){
+   if($icolist[$i]{"OPCODE"} eq "glo"){ 
+      $glo_node= storage_node();
+      $glo_node -> {"SCOPE"} = "G";
+      $glo_node -> {"BASE"} = "G";
+      $glo_node -> {"DISP"} = 0;
+      push @$glo_list, $glo_node;
+   }
+
+   if($icolist[$i]{"OPCODE"} eq "str"){ 
+      $str_node= storage_node();
+      $str_node -> {"STR"}= $str_node -> {"TYPE"};
+      $str_node -> {"NAME"} = $icolist[$i]{"OPR1"};
+      $str_node -> {"TYPE"} = "char[]";
+      $str_node -> {"DIM"} = "S";
+      $str_node -> {"SIZE"} = 1;
+      $str_node -> {"ALIGN"} = 1;
+      $str_node -> {"SCOPE"} = "S";
+      $str_node -> {"BASE"} = "G";
+      $str_node -> {"DISP"} = 0;
+      push @$str_list, $str_node;
+   }
+
+   $i += 1;
+}
+
+#########end of assignment 2#######################
+print FH_ISY " Global variables:\n";
+$result = sprintf("   %-25s %-6s %-5s %-5s %-5s %-5s    %-5s %-5s \n", 
+"name", "type", "dim", "size", "align", "base", "disp", "reg");
+print FH_ISY $result;
+print_storage_node($str_list);
+print FH_ISY "-" x 75 . "\n";
+print_storage_node($glo_list);
+print FH_ISY "=" x 75 . "\n";
+print FH_ISY " String constants:\n";
+print_string_const($str_list);
+print_func_list( $func_list);
+
+code_gen();
+
+$data_sym_table = {};
+
+### input are: the glo_list , str_list and func_list
+#to extract the symbol table ---> bad dumb method!!!!!!!!!
+#
+#output: a nice clean symbol table for each ID.
+#it points to the data structure of that ID that has details info
+
+build_sym_table();
+sub build_sym_table{
+   my $i,$x;
+   my $name, $type;
+   my @outt_list;
+   my $node_list_ref;
+   my @node_list = @$glo_list;
+   for($i=0; $i< $#node_list +1 ; $i= $i + 1){
+     $name =  $node_list[$i] ->{"NAME"};
+     $type =  $node_list[$i] ->{"TYPE"};
+      #printf("GLOBAL:%s %s \n", $name, $type);
+      $data_sym_table->{$name} = $node_list[$i];
+   }
+
+   @node_list = @$str_list;
+   for($i=0; $i< $#node_list +1 ; $i= $i + 1){
+     $name =  $node_list[$i] ->{"NAME"};
+     $type =  $node_list[$i] ->{"TYPE"};
+      #printf("STRING:%s %s \n", $name, $type);
+      $data_sym_table->{$name} = $node_list[$i];
+   }
+
+   @outter_list = @$func_list;
+   for($x =0 ; $x< $#outter_list + 1; $x = $x +1 ){
+      #printf("FUNC: %s\n" , $outter_list[$x] ->{"NAME"});
+      #printf("PARAM: \n");
+      $node_list_ref = $outter_list[$x] -> {"PARAM_LIST"};
+      @node_list = @$node_list_ref;
+      for($i=0; $i< $#node_list +1 ; $i= $i + 1){
+         $name =  $node_list[$i] ->{"NAME"};
+         $type =  $node_list[$i] ->{"TYPE"};
+      #   printf("%s %s \n", $name, $type);
+         $data_sym_table->{$name} = $node_list[$i];
+      }
+      #printf("LOCAL: \n");
+      $node_list_ref = $outter_list[$x] -> {"LOCAL_LIST"};
+      @node_list = @$node_list_ref;
+      for($i=0; $i< $#node_list +1 ; $i= $i + 1){
+         $name =  $node_list[$i] ->{"NAME"};
+         $type =  $node_list[$i] ->{"TYPE"};
+         #printf("%s %s \n", $name, $type);
+         $data_sym_table->{$name} = $node_list[$i];
+      }
+      #printf("TEMP: \n");
+      $node_list_ref = $outter_list[$x] -> {"TMP_LIST"};
+      @node_list = @$node_list_ref;
+      for($i=0; $i< $#node_list +1 ; $i= $i + 1){
+         $name =  $node_list[$i] ->{"NAME"};
+         $type =  $node_list[$i] ->{"TYPE"};
+         #printf("%s %s \n", $name, $type);
+         $data_sym_table->{$name} = $node_list[$i];
+         #printf("%s %s \n", $data_sym_table->{$name}, $name);
+         #$crap = $data_sym_table->{$name} ;
+         #printf("%s %s \n", $crap->{"NAME"},  $name);
+      }
+
+
+   #sample access method: 
+   #
+   #%sym_table = %$data_sym_table;j
+
+   #print("HASH DUMP\n");
+   #foreach $key ( keys %$data_sym_table) {
+   #foreach $key ( keys %sym_table) {
+      #$node_item =  $data_sym_table-> {$key};
+      #$name = $node_item->{"NAME"};
+      #print "$key = " . $node_item . "\n" ;
+      #print "$key = " . $node_item->{"TYPE"} . "\n" ;
+      #}
+   #   }
+   }
+}
+
+
+sub bb_next_use{
+   my $bb_node = shift;
+   my $bbid = $bb_node->{"BBOX"};
+   my $il_ref = $bb_node->{"IL"};
+   my @il = @$il_ref;  #instruction list
+   my $last_il = $#il ;
+   my $i;
+   my $opr_str;
+   my $opcode;
+
+   #printf("\nBOX ID %s\n", $bbid);
+   #print "=" x 50 . "\n";
+
+   for($i=0  ; $i <= $last_il ; $i = $i + 1){
+      ### and re-initialize all operands
+      mark_alias($il[$i] -> {"OPR1"}) ;
+      mark_alias($il[$i] -> {"OPR2"}) ;
+      mark_alias($il[$i] -> {"OPR3"}) ;
+   }
+
+### marking liveness:
+#  tmp  = dead
+#  gbl, param, local = live;
+   for($i=$last_il  ; $i >= 0 ; $i = $i - 1){
+
+      $il_cur =  $il[$i];
+      $opcode = $il_cur -> {"OPCODE"};
+      # also include seq sne... sle if they are implemented
+      #
+      # step 2) in algo 9.5 pg. 535 RD book
+      # does cal and compare instructions like seq count?
+      if( $opcode =~ /add|sub|mul|div|rem|idx|cal/){
+         mark_nextuse ("OPR3", $il_cur, 1 );
+         mark_nextuse ("OPR2", $il_cur, 0 );
+         mark_nextuse ("OPR1", $il_cur, 0 );
+      }elsif ( $opcode =~ /mov/){
+         mark_nextuse ("OPR2", $il_cur, 1 );
+         mark_nextuse ("OPR1", $il_cur, 0 );
+      }else{ 
+         mark_nextuse ("OPR3", $il_cur, 0 );
+         mark_nextuse ("OPR2", $il_cur, 0 );
+         mark_nextuse ("OPR1", $il_cur, 0 );
+
+      }
+      #print_nextuse($il_cur);
+   }
+
+   #for($i=0  ; $i <= $last_il ; $i = $i + 1){
+      #print_nextuse($il[$i]);
+   #}
+
+}
+
+#debugging print for nextuse stuff
+#take in the current statement and prints the details of 
+#operands
+sub print_nextuse{
+   my $il_cur = shift;
+   my $i;
+   my $opr_str;
+   my $opr_name; 
+   my $opr_node; 
+   my $opr_alias; 
+   my $il_nu_line; 
+   my $il_op_nu; 
+   my $il_op_live;
+
+   print "-" x 20 . "NEXTUSE" . "-"x18 . "\n";
+   #printf("%-4s %-10s %-10s %-10s %-25s\n", 
+   #   $il_cur -> {"OPCODE"},
+   #   $il_cur -> {"OPR1"},
+   #   $il_cur -> {"OPR2"},
+   #   $il_cur -> {"OPR3"},
+   #  $il_cur -> {"LINE"});
+   #print "-" x 45 . "\n";
+
+   for($i=1; $i<=3; $i = $i +1 ){
+      $opr_str = "OPR" . $i;
+      $opr_name = $il_cur ->{ $opr_str};
+      $opr_node = $data_sym_table->{$opr_name};
+      if($opr_node){
+         $opr_alias = $opr_node -> {"ALIAS"};
+         $il_op_live = $il_cur->{$opr_str ."_LIVE"};
+         $il_op_nu = $il_cur->{$opr_str ."_NEXT_USE"};
+         $il_nu_line = $il_op_nu->{"LINE"}  if ($il_op_nu);
+   #      printf("%s A:%s L:%s NU:%s         L:(%s) \n", 
+   #         $opr_name, $opr_alias,
+   #         $il_op_live, $il_op_nu, $il_nu_line);
+         #printf("***L: %s %s(%s) \n", $opr_node -> {"LIVE"},
+         #   $opr_node->{"NEXT_USE"},
+          #  $opr_node->{"NEXT_USE"}->{"LINE"});
+      }
+   }
+
+}
+
+#input:
+#  the current instruction statement such that it can be updated
+#  with the previous scan of the operand's info
+#
+#  the str of the operand such that it can be used to lookup on
+#  the sym_table for update the status.
+#
+#  mark option: "0" = nextuse yes, "1" = nextuse no cuz its a
+#  target of an operation
+#
+sub mark_nextuse{
+   my $opr_order = shift;
+   my $il_cur = shift;
+   my $opt = shift;
+   my $opr_str = $il_cur -> {$opr_order};
+   my $il_key = $opr_order . "_LIVE";
+   my $opr_node = $data_sym_table ->{$opr_str};
+   if($opr_node){ ##it's only valid if it's in the symtable
+      $il_cur ->{$il_key} = $opr_node -> {"LIVE"} ;
+      $il_key = $opr_order . "_NEXT_USE";
+      $il_cur ->{$il_key} = $opr_node -> {"NEXT_USE"} ;
+
+      if($opt){
+         $opr_node -> {"LIVE"} = 0;
+         $opr_node -> {"NEXT_USE"} = 0;  #undefine
+      }else{
+         mark_liveness($opr_str);
+         $opr_node->{"NEXT_USE"} = $il_cur;
+      }
+   }
+}
+
+sub mark_liveness{
+   my $opr_str = shift;
+   my $opr_node =  $data_sym_table->{$opr_str}; #if (*) | (&) then fail
+   my $opr_scope =  $opr_node->{"SCOPE"};
+
+   my $is_tmp =  $opr_scope =~ /T/ ;
+
+   $opr_node->{"LIVE"} = 1 unless $is_tmp;
+   ## with the absent of live-variable analysis; all nontemp are live
+
+}
+
+#take in an operand's string
+#need data_sym_table to do look up for the details 
+#
+# data_sym_table will be changed: insert new item that has
+# prefix of * and &, point to the opr_node of the orignal
+# without prefix and add the ALIAS FLAG
+#
+#
+
+sub mark_alias{
+   my $opr_str = shift;
+   my $opr_node =  $data_sym_table->{$opr_str}; #if (*) | (&) then fail
+   my $opr_scope =  $opr_node->{"SCOPE"};
+   my $opr_type =  $opr_node->{"TYPE"};
+   ### if it's global but is (*) then it fails the symbol table
+   #look up but it will pass the (*) or (&) test below
+   #weird stuff of * and & will be caught at below
+
+   my $opr_addr_of = is_addr_of($opr_str);
+   my $opr_ptr_of = is_ptr_of($opr_str);
+   my $is_glb =  $opr_scope =~ /G/ ;
+   my $is_array =  $opr_type =~ /\[\]/ ;
+   my $is_type_ptr =  $opr_type =~ /\*/ ;
+
+   # missing the confused part (d)
+
+   #$opr_addr_of = $opr_addr_of || $is_type_ptr;
+
+   #print ("$opr_str: type($opr_scope)");
+   #print("    **ADDR_OF**") if $opr_addr_of;
+   #print("    **PRT_OF**") if $opr_ptr_of;
+   #print("    **GLOBAL**") if $is_glb;
+   #print("    **IS_ARRAY**") if $is_array;
+   #print(" |\n");
+
+   $opr_node->{"LIVE"} = 0;
+   $opr_node->{"NEXT_USE"} = 0;
+   if ($is_glb || $is_array || $is_type_ptr){
+      $opr_node->{"ALIAS"} = 1 ;
+   }elsif( $opr_ptr_of || $opr_addr_of){
+
+      $opr_node->{"ALIAS"} = 1;
+      #printf("insert new node %s\n",  $opr_str);
+      $data_sym_table->{$opr_str} = $opr_node; 
+      #insert this newone to the table because previously these 
+      #prefixed aren't found in the func_node data structure
+   }else{
+      $opr_node->{"ALIAS"} = 0 ;
+   }
+
+   ### checking:
+   #$opr_node =  $data_sym_table->{$opr_str};
+   #$opr_name = $opr_node->{"NAME"};
+   #$opr_alias =  $opr_node->{"ALIAS"};
+   #print ("$opr_name: *********************ALIAS: $opr_alias \n");
+
+}
+
+   #Register Collector
+sub reg_collector{
+   my $j;
+   my $dead;
+   my $save;
+   my $opr_name;
+   my $opmem;
+   my $opr_node;
+   my $live;
+   my $save;
+
+   for($j =0 ; $j<32 ;$j = $j +1 ){
+      $opr_name =  $reg_table[$j]{NAME};
+      if( $opr_name ) { #this register slot is taken
+         #$dead = !$reg_table[$j]{LIVE};
+         $live = $reg_table[$j]{LIVE};
+         $save = $reg_table[$j]{SAVE};
+         #printf("reg:%s %s LIVE: %s, SAVE: %s, live %s\n", 
+         #  $reg_lookup[$j], $j,
+         ##   $reg_table[$j]{LIVE},
+         #   $reg_table[$j]{SAVE}, $live);
+         if(  $live == 0  && $save == 0 ){
+            #printf("!DEAD NO SAVE\n");
+            $reg_table[$j] = { NAME => "", LIVE=>0, SAVE=>0 };
+         #}elsif ($live == 0 && $save == 1){
+         }
+         
+         if ( $save == 1){
+            ##printf("!DEAD SAVE\n");
+            #pirintf("!Issuing save data\n");
+            $opr_node = $data_sym_table -> {$opr_name};
+
+            if($opr_node){
+               $opmem = $opr_node ->{"DISP"};
+               if($opmem =~ /\d/){
+                  $opmem  = "+".$opmem if ($opmem >= 0);
+                  $op = "st";
+                  $op_reg = $reg_lookup[$j];
+                  $operands = "$op_reg, [%fp" ;
+                  $operands .= $opmem . "]";
+                  print_asm("", $op, $operands, "! $opr_name");
+                  $reg_table[$j]{SAVE} = 0;
+
+                 # $reg_table[$j] = { NAME => "", LIVE=>0, SAVE=>0 };
+               }
+               
+
+            }
+
+         }
+         
+      }
+   }
+}
+
+
+#a WRAPPER for  reg_alloc
+#input is a list_ref of upcoming instructions (for the possiblity of
+#forward scanning) and an index of the current emitting for
+#processing.
+#
+#output will be the three operands allocation with real
+#registers...
+#it also emits some code for doing load and store?
+
+for $i (0..7){ $g_list[$i] = "%g". $i;}
+for $i (0..7){ $o_list[$i] = "%o". $i;}
+for $i (0..7){ $l_list[$i] = "%l". $i;}
+for $i (0..7){ $i_list[$i] = "%i". $i;}
+$ireg_offset = 24;
+$oreg_offset = 8;
+
+
+$prev_inst = {OP=>"", OPR1=>"", OPR2=>""};
+
+
+sub reg_allocation{
+   my $il_ref = shift;
+   my $i = shift;
+   my @il = @$il_ref;
+   my $opr_node_cur = $il[$i]->{"OPR3"};
+   my $cur_node_memory  = $opr_node_cur {"DISP"};
+   my $opr1;
+   my $opr2;
+   my $opr3;
+
+   #print_instr($il[$i] );
+
+   #print_instr ($il[$i] ); ###<---FIX ME
+   $opcode = $il[$i]->{"OPCODE"} ;
+   if($opcode  =~ /add|sub|mul|div|rem|idx/ ){
+   #opr1, opr2, opr3
+      $opr1 = reg_alloc($il_ref, $i, 1 );
+
+      $opr1 = "%g0" if ($opr1 eq "0");
+
+      $opr2 = reg_alloc($il_ref, $i, 2 );
+      $opr3 = reg_alloc($il_ref, $i, 3 );
+
+   }elsif( $opcode  =~ /jeq|jne|jlt|jge|jgt|jle/) { 
+      $opr1 = reg_alloc($il_ref, $i, 1 );
+      $opr2 = reg_alloc($il_ref, $i, 2 );
+   }elsif( $opcode  =~ /seq|sne|slt|sge|sgt|sle/) { 
+      printf("did not implemented\n");
+
+   }elsif(  $opcode  =~ /arg/){
+   #user nee dto take are of arg %o's
+      #check to see if it is already on register file
+      #possiblle problem poniter stuff
+      #
+
+      $opr_name =  $il[$i]->{"OPR3"};
+      $opr2 = 0;
+      $j = reg_tbl_find($opr_name); #find index of maybe existed one
+      #printf("finddddddding %s, at j [%s]=%s\n", $opr_name, 
+         #$j, $reg_lookup[$j]);
+
+      $opr3 =  ($j>=0 )? $reg_lookup[$j] : $opr_name;
+      $opr2 =  ($j>=0 );
+
+      #printf("AAA %s %s %s \n", $opr2, $opr3, $opr_name);
+
+      #$opr3 = reg_alloc($il_ref, $i, 3 );
+      $n =  $il[$i]->{"OPR1"};
+      $n += $oreg_offset;
+      #need a function to flush out %o# incase in used
+      $reg_table[$n]= {NAME => "", LIVE =>  0, SAVE =>  0};
+
+      $opr1 = $reg_lookup[$n];
+
+   }elsif(  $opcode  =~ /cal/){
+   #checking for next use of this result.. if not use
+   #then forget it!!
+      $opr_next_use = 0;
+      $opr_next_use = $il[$i] ->{"OPR3_NEXT_USE"};
+      if($opr_next_use){
+         $opr3 = reg_alloc($il_ref, $i, 3 );
+      }else{
+         $opr3 = -10;
+         #printf("no nextuse\n");
+      }
+
+
+   }elsif ( $opcode =~ /ret/){
+
+   ## don't allocate cuz it will do something else
+      $opr_name =  $il[$i]->{"OPR1"};
+      $is_void_fn = 0;
+      $is_void_fn = 1 if $opr_name eq "void";
+      $opr2 = 0; # 1 -> a simple mov to %i0
+      $opr3 = 0; # 1 -> skip
+      if(! $is_void_fn){
+         $j = reg_tbl_find($opr_name); #find index of maybe existed one
+
+         $opr1 = ($j>= 0)?   $reg_lookup[$j] : $opr_name;
+         $opr2 =  ($j>=0 ); #existed so no need to run emit_ret
+      }else{
+         #$rtn_type = $global_func_ref ->{"RETURN"};
+         #$fname = $global_func_ref ->{"NAME"};
+         #printf("fnname:%s rtn_type %s\n", $fname,$rtn_type);
+         $opr3 = 1;
+         }
+
+
+   }elsif ( $opcode =~ /mov/){
+      $prev_op = $prev_inst->{OP}; 
+      $prev_opr1 = $prev_inst->{OPR1};
+      $opr1 = reg_alloc($il_ref, $i, 1 );
+      $opr2 = reg_alloc($il_ref, $i, 2 );
+
+      #printf("got them %s, %s %s\n", $opr1, $opr2, $i);
+
+      my @il= @$il_ref;
+      my $opr2_name = $il[$i] ->{"OPR2"};
+      my $opr1_name = $il[$i] ->{"OPR1"};
+      my $node_item = $data_sym_table->{$opr2_name};
+      my $scope = $node_item->{"SCOPE"};
+      my $istemp = 0;
+      $istemp = 1 if $scope =~ /T/;
+
+      #printf("SCOPE%s %s %s\n",$opr2_name, $scope, $istemp);
+
+
+      if( $prev_op eq $opcode && 
+         $prev_opr1 eq $opr1_name &&
+         $istemp){
+         #printf("BINGO!!!!%s %s %s\n", $il[$i]->{"LINE"},
+            #$prev_opr1, $opr1);
+
+         $prev_inst->{OP} = $opcode;
+         $prev_inst->{OPR1} = $opr1;
+
+         ##feedback to inner node with negative value
+
+         $node_item->{"LINKING"} = $prev_isnt->{REG_N};
+         ### kill this node since we only use the alias
+         #
+
+         $j = reg_tbl_find($opr2_name); #find index of maybe existed one
+         if($j>=0){
+            $reg_table[$j] = {NAME=>"", LIVE=>0, SAVE=>0};
+            $node_item->{"REG"} = 0;
+         }else{
+            printf("something weird\n");
+         }
+
+        
+         #printf("prev reg %s\n", $prev_isnt->{REG_N});
+         #
+
+         $opr1 = -100;
+      }
+
+      $prev_inst->{OP} = $opcode;
+      $prev_inst->{OPR1} = $opr1_name;
+      $prev_isnt->{REG_N} = $opr2;
+
+   }
+
+   return $opr1, $opr2, $opr3;
+
+}
+# input need: live, next use,  opr_symbol (name)
+# output: return an integer between 0-31 for the register number
+# modify the @register_table
+
+@reg_table = (); #array of hashes 9.3.2 perl book
+@reg_lookup = (@g_list,@o_list,@l_list,@i_list);
+push @reg_table, {NAME => "", LIVE=> 0, SAVE => 0} for(0..31);
+
+
+### load x -> dest
+# x: global var, addr of glo var, string cons, local,
+
+###map from name to reg with any addtional work
+#
+
+$delay_inst = {OP=>"", OPR=>"", COMMENT=>""};
+#$delay_inst = {};
+
+sub emit_arg{
+   my $dest = shift ;
+   my $src = shift;
+
+   my $is_str =0;
+   my $is_glb =0;
+   my $is_local =0;
+   my $real_src =0;
+   my $real_dest =0;
+   my $emitted = 0;
+
+   #$delay_inst= {OP=>"add", OPR=>"asdff"};
+
+   #printf("OP %s, opr%s\n", $delay_inst ->{OP});
+
+   #printf("EMIT_ARG %s, %s\n", $dest, $src);
+   if($src =~ /\(\*\)/){ # is a pointer 
+      $real_src = $';
+      #printf("FOUND is an prt of %s\n", $real_src);
+      }
+   if($src =~ /\(\&\)/){ # is a addr 
+      $emitted = 1;
+      $real_src = $';
+      #printf("FOUND is an addr of %s\n", $real_dest);
+      $node_item =  $data_sym_table-> {$real_src};
+      $base = $node_item -> {"BASE"};
+      $disp = $node_item -> {"DISP"};
+      #printf("FOUND %s, %s %s\n", $base, $disp, $real_src);
+
+      $operand = "$base, $disp, $dest";
+      if($delay_inst->{OP}){
+         print_asm("", "add", $operand, "! emit_arg addr: $src");
+      }else{
+         $delay_inst= {OP=>"add", OPR=>$operand, COM=>"! emit_arg"};
+
+      }
+
+   }
+
+
+   $node_item =  $data_sym_table-> {$src};
+   $name = $node_item->{"NAME"};
+   $is_str = 1  if $node_item ->{"SCOPE"} =~ /S/;
+   $is_glb = 1  if $node_item ->{"SCOPE"} =~ /G/;
+   $is_local = 1  if $node_item ->{"SCOPE"} =~ /L/;
+
+   ## is it a pointer?
+   #
+
+
+#printf("FOUND %s %s sym %s regnum %s, regstr %s\n", $src, $dest, $name,
+#   $node_item->{"REG"},  $reg_lookup[17]);
+
+   if ($real_src){ # source is a pointer
+
+      $src_reg = $node_item->{"REG"};
+      $src_reg  = $reg_lookup[$src_reg];
+
+      $opcode = "mov";
+      $operand = "$src_reg, $dest";
+      if($delay_inst->{OP}){
+         print_asm ("", $opcode, $operand, "! emit_arg real")
+            unless $emitted;
+      }else{
+         $delay_inst= {OP=>$opcode, OPR=>$operand, COM=>"! emit_arg real"};
+      }
+
+      $emitted = 1;
+
+   }
+   ## short character
+
+   if($src =~ /^\'.*\'$/ ){ #small const; it's just a mov
+      #$src =~ s/\'//g; # strip of the ' '  quotes
+      #$src = "\n" if($src =~ /\\n/) ;
+      #my $hex = unpack('H*', $src); 
+      #printf(" a chara %s %s asdf\n", $src, $hex);
+      #print " chara $hex\n";
+      $opcode = "mov";
+      $operand = "$src, $dest";
+      if($delay_inst->{OP}){
+         print_asm ("", $opcode, $operand, "! emit_arg digit")
+            unless $emitted;
+      }else{
+         $delay_inst= {OP=>$opcode, OPR=>$operand, COM=>"! emit_arg digit"};
+
+      }
+
+      $emitted = 1;
+
+
+   }
+
+   ## consts
+
+   if($src =~ /^-*\d+/){ #match negative and positive number (w/o sign)
+      if ($src > 4096 or $src < -4096 ){  #negative number will probably bomb
+         $opcode = "sethi";
+         $operand = "%hi($src), $dest";
+         print_asm ("", $opcode, $operand, "! emit_arg > |2^23|")
+            unless $emitted;
+         $opcode = "or";
+         $operand = "$dest, %lo($src), $dest";
+
+         if($delay_inst->{OP}){
+               print_asm ("", $opcode, $operand, "! second part")
+                  unless $emitted;
+         }else{
+            $delay_inst= {OP=>$opcode, OPR=>$operand, COM=>"! emit_arg digit"};
+         }
+
+
+         $emitted = 1;
+
+      } else { # small number.. just a simple mov
+         $opcode = "mov";
+         $operand = "$src, $dest";
+         if($delay_inst->{OP}){
+            print_asm ("", $opcode, $operand, "! emit_arg < |2^23|")
+               unless $emitted;
+         }else{
+            $delay_inst= {OP=>$opcode, OPR=>$operand, 
+               COM=>"! emit_arg < |2^23|"};
+         }
+         $emitted = 1;
+      }
+   }
+
+   ## string or (&) global variable 
+   if($is_str) {
+      $opcode = "sethi";
+      $operand = "%hi($name), %g1";
+      print_asm ("", $opcode, $operand, "! emit_arg string")
+         unless $emitted;
+      $opcode = "or";
+      $operand = "%g1, %lo($name), $dest";
+      if($delay_inst->{OP}){
+         print_asm ("", $opcode, $operand, "! emit_arg $name")
+            unless $emitted;
+      }else{
+         $delay_inst= {OP=>$opcode, OPR=>$operand, 
+         COM=>"! emit_arg < $name"};
+      }
+
+      $emitted = 1;
+   }
+
+   if ($is_local){
+      $opcode = "ld";
+      $opmem = $node_item ->{"DISP"};
+      $opbase = $node_item ->{"BASE"};
+      $operand = "[$opbase + $opmem], $dest";
+      if($delay_inst->{OP}){
+         print_asm("", $opcode, $operand, "! emit_arg ld from local")
+            unless $emitted;
+      }else{
+         $delay_inst= {OP=>$opcode, OPR=>$operand, 
+         COM=>"! emit_arg < $name"};
+      }
+      $emitted = 1;
+   }
+
+   $node_item =  $data_sym_table-> {$src};
+   $src_reg = $node_item->{"REG"};
+   $src_reg  = $reg_lookup[$src_reg];
+   if($src_reg  && ! $emitted){
+      #printf("emit_arg FROM %s \n", $src_reg);
+      $operand = "$src, $dest";
+      if($delay_inst->{OP}){
+         print_asm("", "mov", $operand, "! emit_arg random weird" )
+            unless $emitted;
+      }else{
+         $delay_inst= {OP=>$opcode, OPR=>$operand, 
+         COM=>"! emit_arg < $name"};
+      }
+      $emitted = 1;
+   }
+
+
+}
+
+### supposedly just returning a free register and mark other info
+##need to process it before calling!!
+
+sub reg_alloc{
+   my $il_ref =shift;
+   my $i = shift;
+   my $opr_num = shift;
+   my @il = @$il_ref;
+   my $j;
+
+   my $opr_name = $il[$i] ->{"OPR" . $opr_num} ;
+   my $opr_next_use = $il[$i] ->{"OPR" . $opr_num . "_NEXT_USE"} ;
+   my $opr_live = $il[$i] ->{"OPR" . $opr_num . "_LIVE"} ;
+   my $is_target =  is_target_opr( $il[$i], $opr_num);
+
+   my $opr_node = $data_sym_table -> { $opr_name};
+
+   #checking for previous subexpression linking register
+   $softlink_reg = $opr_node->{"LINKING"} if ($opr_node);
+   #printf("FOUND %s\n", $softlink_reg) if($softlink_reg);
+
+   return $softlink_reg if $softlink_reg;
+
+   if(!$opr_node){
+   #   print_instr($il[$i] );
+      #printf("\t\t\tFIX: sym=\"%s\": [%s]=%s\n", $opr_name, $opr_num,
+      #   $opr_name);
+      return $opr_name;
+
+   }else{
+
+      $is_before_cal=life_less_cal($il_ref, $i, $opr_num );
+      $j = reg_tbl_find($opr_name); #find index of maybe existed one
+
+      if ($j >= 0 ){ #already got a register... need an update on state
+         $reg_table[$j]{LIVE} = $opr_next_use ? 1 : 0;
+         $reg_table[$j]{SAVE} = ($opr_live || $is_target) ? 1 : 0;
+      }elsif ($is_before_cal){ #get new one 
+         $j=find_caller_save_vacant(); 
+         $j=find_callee_save_vacant() if ( $j < 0);
+      }else{ 
+         $j=find_callee_save_vacant();
+      }
+
+      $reg_table[$j]{NAME} = $opr_name;
+      $reg_table[$j]{LIVE} = $opr_next_use ? 1 : 0;
+      $reg_table[$j]{SAVE} = ($opr_live || $is_target) ? 1 : 0;
+
+      #printf("sym=\"%s\", [%s]=%s\n", $opr_name, $opr_num,
+         #$reg_lookup[$j]);
+      return  $reg_lookup[$j];
+
+   }
+
+
+}
+
+
+sub is_target_opr{
+   $il_cur = shift;
+   $opr_num = shift;
+
+   if($il_cur->{"OPCODE"} =~ /mov/){
+      return  ($opr_num == 2);
+   }elsif ($il_cur->{"OPCODE"} =~ /add|sub|mul|div|rem|idx/) {
+      return  ($opr_num == 3);
+   } else{ 
+      return 0;
+   }
+}
+
+sub reg_tbl_find{
+   my $opr_name =shift;
+   my $i;
+   for($i=0; $i <32 ; $i = $i +1 ){
+      $str = $reg_table[$i]{NAME} ;
+      #printf("CMP(%s) %s vs %s\n", $i, $opr_name , $str);
+      return $i if ( $str eq $opr_name) ;
+      #return $i if ( $str =~ m/\Q$opr_name\E/) ;
+   }
+   return -1;
+}
+
+sub find_caller_save_vacant {
+   my @j;
+   my @reg_list = ( 2, 3, 4, 8, 9, 10, 11, 12, 13,15);
+
+   foreach $j (@reg_list){
+      return $j unless ( $reg_table[$j]{NAME} );
+   }
+   return -10;
+}
+
+sub find_callee_save_vacant {
+   my @j;
+   my @reg_list = ( 16 .. 29);
+
+   foreach $j (@reg_list){
+      return $j unless ( $reg_table[$j]{NAME} );
+      }
+   return -10;
+}
+# to determine if the current opr will live shorter or don't
+# cross a call instruction.
+# traverse the bb instruction list until hit opcode call
+# once there, get the line number and compare with the next use
+# of the current operand
+#
+# input:( il_list, il index, opr#)
+# input: bb instruction list and a starting index of the operand
+# and an oprand# eg OPR1 = 1
+#
+# output: true if line# of operand is higher than line# of call
+# return ($cal_line > $nextuse);
+
+
+sub life_less_cal{
+   my $il_list  = shift;
+   my $i = shift; 
+   my $opr_num = shift;
+   my @il = @$il_list;
+   my $opr_str = "OPR" . $opr_num;
+
+   my $opr_name = $il[$i]->{$opr_str} ;
+   my $opr_nextuse =  $il[$i]->{$opr_str . "_NEXT_USE"};
+   #print $opr_str . "_NEXT_USE"  . $opr_nextuse. "\n";
+
+   if($opr_nextuser){
+      $opr_nextuse_line = $opr_nextuse ->{"LINE"};
+   }else{ #this means no future use so just assign current line
+      $opr_nextuse_line = $il[$i]->{"LINE"};
+   }
+
+   for($i=$il_i; $i< $#il +1 ; $i = $i +2){
+      $il_cur = $il[$i];
+ #     printf("going...\n");
+      if ( $il_cur -> {"OPCODE"} =~ /cal/) {
+         $cal_line = $il_cur -> {"LINE"};
+         #printf("cal:%s, %s\n", $opr_nextuse_line, $cal_line);
+            return ($cal_line > $opr_nextuse_line);
+
+      }
+   }
+
+   return 0; #cal is not existed
+
+}
+
+#take in an operand's string
+#return the original variable if it has an address of
+#otherwise return nothing
+#
+
+sub is_addr_of{
+   my $opr_str = shift;
+   my $real_opr;
+
+   if($opr_str =~ /\(\&\)/){ # is a pointer 
+      $real_opr = $';
+
+      #printf("is an addr of %s\n", $real_opr);
+
+      return $real_opr;
+   }
+}
+
+sub is_ptr_of{
+   my $opr_str = shift;
+   my $real_opr;
+
+   if($opr_str =~ /\(\*\)/){ # is a pointer 
+      $real_opr = $';
+
+      #printf("is an ptr of %s\n", $real_opr);
+
+      return $real_opr;
+   }
+}
+
+
+
+close(FH_ISY);
+######################################################
+# begining of assignment 3:w
+#
+
+mark_leader($func_list);
+
+$bb_list=[];
+
+build_bb($func_list);
+
+tranverse_func($func_list);
+
+
+
+foreach $item (@$bb_list){
+   #%node = %$item;
+
+   $i_list_ref = $item->{"IL"};
+   @i_list = @$i_list_ref;
+
+   $s = $item ->{"B"};
+   $e = $item ->{"E"};
+
+   #printf("BB %d\n", $item->{ID});
+   for($i = $s; $i < $e; $i=$i+1){
+      $blah = $i_list[$i];
+   #   print $blah;
+   #   printf("again %s\n", $node->{"ID"} );
+   #   printf("op %d %s\n", $blah->{"LINE"}, $blah->{"OPCODE"} );
+   }
+   #printf("again %s\n", $node->{"INSTR_PTR"}->{"OPCODE"});
+}
+
+##this tranverse function is kinda weird as suggested by Prof. Mackey
+#
+#it seems unnessary to do a depth first search on the graph because the
+#graph was constructed in a same order as input box, then nodes are
+#connected to edges with the same name. see linking_bb()...
+
+
+$global_func_ref ;
+$global_bb_ref ;
+sub tranverse_func{
+   my $func_list_ref = shift;
+   my @func_list = @$func_list_ref;
+   my $function;
+   my $bb_list;
+   my $lbl;
+   my $opr1;
+   $LC_label=0;
+
+   ###PROLOGUE
+   print_asm(".text","","","");
+   print_str_list();
+   print_asm("","","","");
+   print_asm(".bss","","","");
+   print_asm("",".align","4","");
+   print_asm("","","","");
+
+   foreach $function (@func_list){
+      $bb_list = $function -> {"BB_LIST"};
+      $global_bb_ref = $bb_list;
+      $global_func_ref = $function;
+      #######print stuff for a function#########
+      print_asm("","","","");
+      print_asm(".text","","","");
+      print_asm("LC". $LC_label.":","","","");
+      $LC_label += 1;
+
+      $op = ".align 4";
+      #printf("%-5s %-5s %-25s %-25s\n", "", $op,"" , "");
+      print_asm("",$op, "","");
+
+      $lbl = $function->{"NAME"};
+
+      $op = ".global $lbl";
+      #printf("%-5s %-5s %-25s %-25s\n", "", $op,"" , "");
+      print_asm("",$op, "","");
+
+
+      #$op = ".proc 020"; ## fake register id
+
+      #print_asm("",$op, "","");
+
+      ### beginging of the function
+      print_asm($lbl.":","", "","");
+      $op = "save";
+      $stkframe = $function -> {"FRAME"};
+      ###$stkframe = -13233;  ##testcase
+      #patch up to be mul of 8
+      $rem = $stkframe % 8;
+
+      $stkframe += 8-$rem if $rem;
+
+      if($stkframe > -4096){
+         $opr1 = "%sp, -$stkframe, %sp";
+         print_asm("",$op, $opr1,"");
+      }else{
+         $op = "sethi";
+         $operands = "%hi($stkframe), %g1";
+         print_asm("",$op, $operands,"! higher than 13bits");
+         $op = "or";
+         $operands = "%g1, %lo($stkframe), %g1";
+         print_asm("",$op, $operands,"");
+         $op = "save";
+         $operands = "%sp, %g1, %sp";
+         print_asm("",$op, $operands,"");
+      }
+
+      ### allocate registers for params
+      #should i do this after marking next use??
+      reg_allocate_param($function); 
+      tranverse_bb($bb_list);
+   }
+}
+
+#remove this function?
+sub reg_allocate_param{
+   my $p_node;
+   my $f = shift;
+   my $i;
+   $pl_r = $f -> {"PARAM_LIST"};
+   my @param_list = @$pl_r;
+   my $uplim  =  $#param_list +1 ;
+
+   #printf("func_name %s %s\n", $f->{"NAME"}, $#param_list);
+
+   ##looping only the param_list.... not from the whole instruction list
+   for($i=0; $i< $#param_list +1 ; $i= $i + 1){
+      $p_node = $param_list[$i] -> {"NAME"};
+      #printf("para %s, str %s\n", $i, $p_node);
+      mark_alias($p_node);
+      $p_disp = $param_list[$i] -> {"DISP"};
+      $opr_node = $data_sym_table->{$p_node}; 
+   
+      #part 5 (a) 
+      if($opr_node->{"ALIAS"}){ ## issue a store immediately
+         $op= "st";
+         $memaddr = "[%fp+" . $p_disp . "]";
+         $operands = "%i" . $i . ", " . $memaddr;
+         print_asm("", $op, $operands, "! store aliased valued");
+      }
+#      $register_table[$i+$ireg_ofset] =  $p_node;
+      $reg_table[$i+$ireg_offset]{NAME} = $p_node;
+      $reg_table[$i+$ireg_offset]{LIVE} = 1; #we'll somewhere
+      $reg_table[$i+$ireg_offset]{SAVE} = 0; #inparam =! save
+      $opr_node -> {"REG"}  = $ireg_ofset + $i;
+
+      #printf("nth: %s, n: %s, mem: %s, alias: %s reg: %s\n", $i,
+      #   $p_node, $p_disp, $opr_node -> {"ALIAS"}, 
+      #  $reg_lookup[$ireg_ofset + $i]);
+
+  }
+}
+
+#input is a graph or list of bb_nodes 
+#output: emit stuff from bb
+sub tranverse_bb{
+   my $bb_list= shift;
+   my $bb_node;
+   my @bb;
+   my @fifo;
+
+   @bb = @$bb_list;
+   unshift @fifo, $bb[0];
+
+   while ( $#fifo +1 ){
+      $bb_node = pop @fifo;
+
+      next if ($bb_node->{"EMITTED"});
+
+      $bb_node = $bb_node->{"R_LINK"} while($bb_node->{"R_LINK"});
+
+      while($bb_node ->{"F_LINK"}){
+         #printf ("BBOX %s \n" , $bb_node -> {"BBOX"} );
+         #stuff for finding next use
+         bb_next_use($bb_node);
+         ##reg_alloc_param
+         emit_bb($bb_node);
+
+         $bb_node->{"EMITTED"} = 1;
+         $bb_node = $bb_node ->{"F_LINK"};
+         unshift @fifo, $bb_node -> {"J_LINK"};
+      }
+      if($bb_node->{"BBOX"}){  # those at the bottom of the tree
+         bb_next_use($bb_node);
+         emit_bb($bb_node);
+         #printf ("BBOX %s \n" , $bb_node->{"BBOX"});
+      }
+      $bb_node->{"EMITTED"} = 1;
+   }
+
+}
+
+
+## emit code for each basic block
+#there are many basic blocks in a function:
+#   bb's is an element of functino
+#   each next_use and is an attributed within a BB
+#   dead/live&save/nosave  are also attributed within a BB
+sub emit_bb{
+   my $bb_node = shift;
+   my $bbid = $bb_node->{"BBOX"};
+   my $jmp_link = $bb_node->{"J_LINK"} ->{"BBOX"};
+   my $f_link = $bb_node->{"F_LINK"} ->{"BBOX"};
+   my $comment = "! branch = $jmp_link; follow = $f_link";
+   my $il_ref = $bb_node->{"IL"};
+   my @il = @$il_ref;
+   my $i;
+   my $lbl, $op, $opr1, $opr2, $opr3, $line;
+
+   my $fill_delay=0;
+
+
+   my $fname = $global_func_ref->{"NAME"};
+   $bbid .= "_" . $fname;
+
+   $pl_r = $global_fun_ref -> {"PARAM_LIST"};
+   my @param_list = @$pl_r;
+   my $uplim  =  $#param_list +1 ;
+
+   #allocating i-regs for input params
+#   for($i=0; $i <$uplim; $i = $i +1 ){
+#      $p_node = $param_list[$i] -> {"NAME"};
+      
+   print_asm( $bbid . ":", "", "", "");  #print label of this BB
+
+   for($i =0 ; $i < $#il +1 ; $i = $i +1 ){
+      $lbl = $il[$i] -> {"LABEL"};
+      print_asm($lbl .":", "", "") if ($lbl);
+      #printf("%-5s %-5s %-25s %-25s\n", $lbl.":","","","") if ($lbl);
+      $op = $il[$i] -> {"OPCODE"};
+      $opr1 = $il[$i] -> {"OPR1"};
+      $opr2 = $il[$i] -> {"OPR2"};
+      $opr3 = $il[$i] -> {"OPR3"};
+
+      ##mm_check memory check will replacing..
+      #($nopr1, $nopr2, $nopr3 ) =mm_check ($opr1,$opr2,$opr3);
+
+      ### find a replacement for these
+      ($nopr1, $nopr2, $nopr3 ) = reg_allocation($il_ref, $i); 
+
+      #printf("new set [%s], [%s], [%s]\n", $nopr1, $nopr2, $nopr3 );
+
+      $line = $il[$i] -> {"LINE"};
+      $comment = "! l($line): $op $opr1 $opr2 $opr3"; #default comment
+
+      $operands = "$nopr1";
+      $operands .= ", $nopr2" if (length($nopr2));
+      $operands .= ", $nopr3" if (length($nopr3) );
+
+      ### translate the opcodes:
+#      #jumps
+      if( $op =~ /jeq|jne|jlt|jge|jgt|jle/){
+         ##print"CRAP $op\n";
+         #$newop = "subcc";
+         $newop = "cmp";
+         $operands = "$nopr1";
+         $operands .= ", $nopr2" if (length($nopr2));
+         #$operands .= ", %g0"; 
+         print_asm( "", $newop, $operands, $comment);
+         #printf("Find label %s\n", $opr3);
+         $operands = find_bb($opr3);
+         #printf("GOT BB %s\n", $operands);
+         $operands .= "_". $fname;
+         $newop = "be" if( $op =~ /jeq/);
+         $newop = "bne" if( $op =~ /jne/);
+         $newop = "bl" if( $op =~ /jlt/);
+         $newop = "bge" if( $op =~ /jge/);
+         $newop = "ble" if( $op =~ /jle/);
+         $newop = "bg" if( $op =~ /jgt/);
+         $newop = "be" if( $op =~ /bge/);
+         print_asm( "", $newop, $operands, "! $operands -> $opr3");
+         #FIXME use delayfiller
+         print_asm( "", "nop", "",  "", "");
+
+      }elsif ( $op =~ /jmp/){
+         $newop = "ba";
+         #printf("Find label %s\n", $opr1);
+         $operands = find_bb($opr1); 
+         #printf("GOT BB %s\n", $operands);
+         $operands .= "_". $fname;
+         print_asm( "", $newop, $operands, $comment);
+         print_asm( "", "nop", "", "! $operands -> $opr1");
+      }elsif( $op =~ /ret/){
+         #FIX ME to include the return value
+         #$newop = "jmp1";
+         #printf("ret %s\n", $nopr3);
+         if(! $nopr3){          #returning stuff
+            if($nopr2){
+               $operands ="$nopr1, %i0";
+               print_asm("", "mov", $operands, $comment);
+            }else{
+               emit_ret($nopr1, $comment); #prepapre
+            }
+         } ##skipped save register?
+         $newop = "ret";
+         #$operands = "%i7+8, %g0";
+         print_asm( "", $newop, "", $comment);
+         print_asm( "", "restore", " ", "");
+      }elsif( $op =~ /mul/){
+         $newop = "smul";
+         print_asm( "", $newop, $operands, $comment);
+      }elsif( $op =~ /div/){
+         $newop = "sra";
+         $operands = "$nopr1, 31, %g1";
+         print_asm( "", $newop, $operands, $comment);
+         $newop = "wr";
+         $operands = "%g1, 0, %y";
+         print_asm( "", $newop, $operands, "");
+         $newop = "sdiv";
+         $operands = "$nopr1, $nopr2, $nopr3";
+
+         print_asm( "", $newop, $operands, "");
+         print_asm( "", "nop", "",  "");
+         print_asm( "", "nop", "",  "");
+         print_asm( "", "nop", "",  "");
+      }elsif( $op =~ /seq|sne|slt|sge|sgt|sle/){
+         $newop = "subcc";
+         $operands ="$opr1, $opr2";
+         $dest = "$opr3";
+         print_asm( "", $newop, $operands, $compare);
+         print_asm( "", "", "", "! need to check conditional code");
+      }elsif( $op =~ /rem/){
+         $newop = "add";
+         print_asm( "", $newop, $operands, $comment);
+         print_asm( "", "nop", "",  "! don't know how to find remainder");
+      }elsif( $op =~ /arg/){
+         ##push first arg into delayfiller for a cal FIXME
+         #$newop = "mov";
+         $operands = "$nopr1, $nopr3";
+         #print_asm( "", "", "! skip", $comment);
+         #$operands = "$nopr3, %o". $nopr1;
+         #printf("NEED TO HANDLE ACTUAL MOV %s\n", $nopr1);
+         $operands = "$nopr3,  $nopr1";
+         #print_asm("!", "ARG", $operands, "");  # for printing
+         #printf("crap %s\n", $nopr2);
+         if ($nopr2){
+            if ( $delay_inst->{OP}){
+               print_asm("", "mov", $operands, $comment);  # for printing
+            }else{
+               $delay_inst= {OP=>"mov", OPR=>$operands, 
+                     COM=>$comment };
+            }
+
+         #insert to delay queue
+         #
+         }else{
+            print_asm("", "", "", $comment);  # for printing
+            emit_arg($nopr1, $nopr3);  # for printing
+         }
+         #print_asm( "", $newop, $operands, $comment);
+      }elsif( $op =~ /cal/){
+         $newop = "call";
+         $tmp = $opr1 -1 ;
+         $operands = "$opr2";
+         print_asm( "", $newop, $operands, $comment);
+         if($delay_inst->{OP}){
+            $op =  $delay_inst->{OP};
+            $opr = $delay_inst->{OPR};
+            $com = $delay_inst->{COM};
+         #   printf("GOOD %s\n", $op);
+            print_asm("", $op, $opr, $com . " (delay)");
+            $delay_inst = {OP => "", OPR=>"", COM=>""};
+         }else{
+            print_asm( "", "nop", "",  "! no parameter");
+         }
+            #unless $delay_inst->{OP};
+
+         ###save the result for call or not right here --> 
+         if($nopr3>=0){
+            $operands = "%o0, $nopr3";
+            print_asm("", "mov", $operands, "! save rtn reg %o0-> ($opr3)");
+         }else{
+            print_asm("", "", "", "! OPT#3 not-used so skip");
+
+         }
+
+         $fill_delay =1;
+         #$newop = "mov";
+         #$operands = "$nopr3, %o$tmp";
+         #print_asm( "", $newop, $operands, "");
+         #print_asm( "", "nop", "",  "! no parameter") if ($opr1 <1);
+      }elsif( $op =~ /idx/){
+         if ($nopr2 =~ /^\d+$/){
+
+            $operands = "$nopr2, %g1";
+            print_asm("", "mov", $operands, "! mul 4");
+            
+            $operands = "%g1, 2, %g1";
+            print_asm("", "sll", $operands, "! mul 4");
+         }else{
+
+            $newop = "sll";
+            $operands = "$nopr2, 2, %g1";
+            print_asm("", $newop, $operands, "! mul 4");
+         }
+
+         $newop = "ld";
+         $operands = "[$nopr1+%g1], $nopr3";
+         print_asm("", $newop, $operands, "! $opr1 + $opr3");
+         #$newop = "add";
+         #$operands = "$nopr3, $nopr2, $nopr3";
+         #print_asm("", $newop, $operands, $comment);
+         #print_asm("", $newop, $operands, "! $opr3 = $opr3 + $opr2 ");
+      }elsif( $op =~ /mov/){
+         if($nopr1 <0){
+            print_asm("", "",  "", "! OPT#5 ". $comment);
+         }else{
+            $operands = "$nopr1, $nopr2";
+            print_asm("", "mov",  $operands, "! $opr1 -> $opr2");
+         }
+      }else{
+         print_asm( "", $op, $operands,  $comment ."DEF");
+      }
+
+      #FIXME
+      ## add any stores that need to be done here
+      reg_collector();
+      #printf(" FILLER %s \n", $fill_delay);
+      #if ($fill_delay){
+         #printf("OP%s\n", $delay_inst ->{OP});
+         #$op =  $delay_inst->{OP};
+         #if ($op){
+            #$op =  $delay_inst->{OP};
+            #$opr = $delay_inst->{OPR};
+            #$com = $delay_inst->{COM};
+            #printf("GOOD %s\n", $op);
+            #print_asm("", $op, $opr, $com . "DELAY");
+            #$delay_inst = {OP => "", OPR=>"", COM=>""};
+#
+         #}
+         #$fill_delay = 0;
+      #}
+
+   }
+}
+
+sub emit_ret{
+   my $opr = shift;
+   my $comment = shift;
+   my $dest = "%i0";
+
+   #printf("name %s\n",$opr);
+
+   $node_item = $data_sym_table->{$opr};
+   #printf("name %s %s\n",$opr, $node_item);
+#   print_asm( "", "ret", $opr, $comment);
+   if ($opr > 4096 or $opr < -4096 ){  #negative number will probably bomb
+      $operand = "%hi($opr), $dest";
+      print_asm ("", "sethi", $operand, "! emit_ret" );
+      $operand = "$dest, %lo($opr), $dest";
+      print_asm ("", "or", $operand, "! emit_ret" );
+   }elsif ($node_item){
+      #printf("exited node\n");
+      $base=  $node_item -> {"BASE"};
+      $disp=  $node_item -> {"DISP"};
+      $operand ="[$base + $disp], %g1";
+      print_asm ("", "ld", $operand, $comment);
+      $operand = "%g1, $dest";
+      print_asm ("", "mov", $operand, "! emit_ret" );
+   }elsif (!( $opr =~ /void/) ) {
+      $operand = "$opr, $dest";
+      print_asm ("", "mov", $operand, "! emit_ret" );
+   }
+
+}
+
+sub find_bb{
+   my $exit_label = shift;
+
+   my @bb = @$global_bb_ref ;
+   #print $global_bb_ref;
+   for($i=0; $i< $#bb+1; $i= $i +1){
+   #print "HEEEEEEEEEEEEe\n";
+      $enter_labels_ref =  $bb[$i] -> {"ENTERS"};
+      @enter_labels = @$enter_labels_ref ;
+   #   print @enter_labels ."\n";
+      if ( grep {$_ eq $exit_label} @enter_labels) {
+         #print "MATCH" .$bb[$i] ->{"BBOX"}. "\n";
+         return $bb[$i] ->{"BBOX"};
+      }
+   }
+}
+sub print_asm{
+   my $lbl  =shift;
+   my $op  =shift;
+   my $oprand  =shift;
+   my $comment  =shift;
+   $result = 
+      sprintf("%-5s %-5s %-25s %-25s\n", $lbl, $op, $oprand, $comment);
+   if(length ($result) > 72){
+      $result = sprintf("%-5s %-5s %-25s %-25s\n", 
+                     $lbl, $op, $oprand, "");
+      print NEW_FH_ASM $result;
+      $result = sprintf("%-5s %-5s %-25s %-25s\n", 
+                     "", $comment, "", "");
+      print NEW_FH_ASM $result;
+      if ($options{D}) {
+         printf("%-5s %-5s %-25s %-25s\n", $lbl, $op, $oprand, "");
+         printf("%-5s %-5s %-25s %-25s\n", "", $comment, "", "");
+      }
+   }else{ 
+   
+      printf("%-5s %-5s %-25s %-25s\n", $lbl, $op, $oprand, $comment)
+         if ($options{D}); 
+      print NEW_FH_ASM $result;
+   }
+}
+
+## memory checker for all the operands
+#used in assignment 3 but it seems like it has to be replaced in
+#assignment 4 due to register allocation
+sub mm_check{
+   my $opr0 = shift;
+   my $opr1 = shift;
+   my $opr2 = shift;
+
+   my ($newopr0,$newopr1,$newopr2);
+   my $f = $global_func_ref;
+   my $i;
+   $newopr0 =$opr0;
+   $newopr1 =$opr1;
+   $newopr2 =$opr2;
+   $pl_r = $f -> {"PARAM_LIST"};
+   @param_list = @$pl_r;
+   for($i=0; $i< $#param_list +1 ; $i= $i + 1){
+      $newopr0 =  $param_list[$i] -> {"REG"} if 
+                 ($param_list[$i]->{"NAME"} eq $opr0) ;
+      $newopr1 =  $param_list[$i] -> {"REG"} if 
+                 ($param_list[$i]->{"NAME"} eq $opr1) ;
+      $newopr2 =  $param_list[$i] -> {"REG"} if 
+                 ($param_list[$i]->{"NAME"} eq $opr2) ;
+  }
+
+   $pl_r = $f -> {"TMP_LIST"};
+   @param_list = @$pl_r;
+   for($i=0; $i< $#param_list +1 ; $i= $i + 1){
+      $newopr0 =  $opr0 if 
+                 ($param_list[$i]->{"NAME"} eq $opr0) ;
+      $newopr1 =  $opr1  if 
+                 ($param_list[$i]->{"NAME"} eq $opr1) ;
+      $newopr2 =  $opr2  if 
+                 ($param_list[$i]->{"NAME"} eq $opr2) ;
+  }
+  ###global check:
+
+   $pl_r = $f -> {"LOCAL_LIST"};
+   @param_list = @$pl_r;
+   for($i=0; $i< $#param_list +1 ; $i= $i + 1){
+      $newopr0 =  "[%fp" . $param_list[$i]->{"DISP"}. "]" 
+                 if ($param_list[$i]->{"NAME"} eq $opr0) ;
+      $newopr1 =  "[%fp" . $param_list[$i]->{"DISP"}. "]" 
+                 if ($param_list[$i]->{"NAME"} eq $opr1) ;
+      $newopr2 =  "[%fp" . $param_list[$i]->{"DISP"}. "]" 
+                 if ($param_list[$i]->{"NAME"} eq $opr2) ;
+  }
+   @param_list = @$glo_list;
+   for($i=0; $i< $#param_list +1 ; $i= $i + 1){
+      $newopr0 =   "[$opr0]" if ($param_list[$i]->{"NAME"} eq $opr0) ;
+      $newopr1 =   "[$opr1]" if ($param_list[$i]->{"NAME"} eq $opr1) ;
+      $newopr2 =   "[$opr2]" if ($param_list[$i]->{"NAME"} eq $opr2) ;
+   }
+  ###operator transform for (&) and *
+##########make stop here#################
+
+   if($opr0 =~ /\(\&\)/){ # is a pointer 
+      $newopr0 = $';
+      $newopr0 = "[$newopr0]";
+   }elsif($opr0 =~ /\(\*\)/){
+      $newopr0 = "[$opr0]";
+   }
+
+   if($opr1 =~ /\(\&\)/){ # is a pointer 
+      $newopr1 = $';
+      $newopr1 = "[$newopr1]";
+   }elsif($opr1 =~ /\(\*\)/){
+      $newopr1 = "[$opr1]";
+   }
+
+   if($opr2 =~ /\(\&\)/){ # is a pointer 
+      $newopr2 = $';
+      $newopr2 = "[$newopr2]";
+   }elsif($opr2 =~ /\(\*\)/){
+      $newopr2 = "[$opr2]";
+   }
+
+   return $newopr0,$newopr1,$newopr2;
+
+}
+
+sub build_bb{
+   my $func_list_ref = shift;
+   my @func_list = @$func_list_ref;
+   my $function;
+
+   my @il;
+   my $prev_bb;
+   my $x;
+
+   foreach $function (@func_list){
+
+      $fil_ref =  $function -> {"INSTR_PTR"};
+      @il = @$fil_ref ;
+
+      $bb_list= [];
+      my $bbcounter =0;
+      for($x =0 ; $x< $#il + 1; $x = $x +1 ){
+         if ($il[$x] -> {"LEADER"} ){
+            ($y, $new_list_ref) = trim_ins_list( $x, \@il); 
+            $entrance_labels_ref =  find_entrance_labels($x, \@il);
+            $exit_label =  find_exit_label ($y, $#il + 1  ,\@il);
+            $jmp_label =  find_jmp_label ($y, \@il);
+
+            $bb_node = { IL => $new_list_ref, 
+               ENTERS => $entrance_labels_ref,
+               EXIT => $exit_label,
+               JMP => $jmp_label,
+               REVERSE => "NULL",
+               #BBOX => $bbcounter
+               BBOX => "BB" .$bbcounter
+               };
+
+            $fname =  $function -> {"NAME"};
+            #print "-" x 40 . "\n";
+            #printf "FUNC: %s bbid (%s)\n", $fname, $bb_node->{"BBOX"};
+            #print @$entrance_labels_ref;
+            #print "\n";
+            #print $jmp_label ;
+            #print "\n";
+            #print $exit_label;
+            #print "\n";
+            #print_instr_list($new_list_ref);
+
+            $x=$y;
+            $bbcounter += 1;
+         }
+         push @$bb_list , $bb_node;
+      }
+      linking_bb($bb_list);
+      ##insert this graph to the function?
+      $function -> {"BB_LIST"} = $bb_list;
+      $funcname =  $function -> {"NAME"};
+      #printf("FUNC:%s\n", $funcname);
+  #    print_bb_list($bb_list);
+   }
+
+}
+#print_func_bb_list();
+
+sub print_func_bb_list{
+
+   my @f = @$func_list;
+
+   for($i=0;  $i<= $#f; $i = $i +1 ){
+      printf("F: %s\n", $f[$i]->{"NAME"} );
+      $bb_ref = $f[$i] -> {"BB_LIST"};
+      @b= @$bb_ref;
+      for($j =0; $j<= $#b; $j += 1){
+         $f_link = $b[$j]->{"F_LINK"};
+         $r_link = $b[$j]->{"R_LINK"};
+         $j_link = $b[$j]->{"J_LINK"};
+
+         printf("BB: %s F:%s R:%s J:%s\n", 
+            $b[$j]->{"BBOX"}, 
+            $f_link->{"BBOX"},
+            $r_link->{"BBOX"},
+            $j_link->{"BBOX"});
+      }
+   }
+
+
+}
+
+#dump bb from function
+
+##dump_all_bb_frmfn{
+#print "crap";
+##}
+sub print_bb_list{
+   my $bbref =shift;
+   my @bb = @$bbref;
+   my $j;
+   my $upperlimit = $#bb +1 ;
+   for($j =0 ; $j < $upperlimit; $j = $j +1){
+      printf("bbid: (%s), F (%s), R (%s), J (%s)\n",
+         $bb[$j] ->{"BBOX"},
+         $bb[$j] ->{"F_LINK"}->{"BBOX"},
+         $bb[$j] ->{"R_LINK"}->{"BBOX"},
+         $bb[$j] ->{"J_LINK"}->{"BBOX"});
+   }
+}
+
+sub linking_bb{
+   my $bbref =shift;
+   my @bb = @$bbref;
+   my $i ,$j;
+   my $exit_label;
+   my $enter_labels_ref;
+   my @enter_labels;
+
+   my $upperlimit = $#bb +1 ;
+   for($j =0 ; $j < $upperlimit; $j = $j +1){
+      for($i =0 ; $i< $upperlimit ; $i = $i+1){
+         $exit_label=  $bb[$j]->{"EXIT"} ;
+         $enter_labels_ref =  $bb[$i] -> {"ENTERS"};
+         @enter_labels = @$enter_labels_ref ;
+         if ( grep {$_ eq $exit_label} @enter_labels) {
+            #print "MATCH\n";
+            $bb[$j] ->{"F_LINK"} = $bb[$i];
+            $bb[$i] ->{"R_LINK"} = $bb[$j];
+            }
+      }
+   }
+   for($j =0 ; $j < $upperlimit; $j = $j +1){
+      for($i =0 ; $i< $upperlimit ; $i = $i+1){
+         $exit_label=  $bb[$j]->{"JMP"} ;
+         $enter_labels_ref =  $bb[$i] -> {"ENTERS"};
+         @enter_labels = @$enter_labels_ref ;
+         if ( grep {$_ eq $exit_label} @enter_labels) {
+            #print "MATCH JUMP\n";
+            $bb[$j] ->{"J_LINK"} = $bb[$i];
+            }
+      }
+   }
+
+   return \@bb;
+}
+
+# made a dumb mistake in data structure of not good keeping
+# track of labels and leaders. so now i have to backward tranverse
+# find the top most label
+sub find_entrance_labels{
+   my $i =shift;
+   my $ilref =shift;
+   my @il = @$ilref;
+   my $entrance_labels = ();
+
+   #printf("entrance %s\n", $i);
+   if ($i == 0){
+      push @$entrance_labels, "NULL_AT_TOP";
+   }elsif ($il[$i] -> {"LABEL"} ) {
+      push @$entrance_labels, $il[$i] -> {"LABEL"};
+      }
+   $i -= 1;
+   while($i>0){
+      if (! $il[$i] -> {"OPCODE"}) {
+         push @$entrance_labels, $il[$i] -> {"LABEL"} if
+            $il[$i] -> {"LABEL"} ;
+         $i -= 1;
+      } else{ last ;}
+   }
+
+   return $entrance_labels;
+}
+
+sub find_exit_label{
+   my $i =shift;
+   my $listend =shift;
+   my $ilref =shift;
+   my @il = @$ilref;
+   my $exit_label ;
+
+   $exit_label = "NULL_AT_BOTTOM";
+   while ($i < $listend){
+      if ($il[$i] -> {"LABEL"}) {
+         $exit_label = $il[$i] -> {"LABEL"};
+         last;
+      }
+      $i += 1; 
+   }
+   return $exit_label;
+}
+
+sub find_jmp_label{
+   my $i =shift;
+   my $ilref =shift;
+   my @il = @$ilref;
+   my $jmp_label;
+   my $jump_inst;
+
+   while ($i >0 ){
+      if ($il[$i]->{"OPCODE"} ){
+         $jump_inst = $il[$i];
+         last;
+      }
+      $i -= 1;
+   }
+
+   my $jmp_op = $jump_inst->{"OPCODE"};
+   if (isjump( $jmp_op) ){
+      $jmp_label =  ($jmp_op = ~ /jmp/) ? $jump_inst->{"OPR1"} : 
+         $jump_inst->{"OPR3"} ;
+   }else{
+      $jmp_label = "NOJUMP";
+   }
+}
+
+
+# take a list of instructions with the index at the leader
+# return a new list of instructions start from leader and
+# end one instruction before the next leader
+# trimmed OP : <NULL>, nop, glo, end, fnc, prm, loc, tmp, str, stk, xit
+
+sub trim_ins_list{ 
+   my $i =shift;
+   my $ilref =shift;
+   my @il = @$ilref;
+   my @new_list = ();
+
+   my $lastelt = $#il;
+
+   #first one is the leader and has to be in the list
+
+  #    print"TRIMMMMM\n";
+      #print_instr ($il[$i] );
+   #push @new_list , $il[$i]
+      if (! ($il[$i] -> {"OPCODE"} 
+         =~ /nop|fnc|prm|loc|tmp|glo|stk|end|xit|str|^$/)){
+         push @new_list , $il[$i];
+   #printf ("size %d\n", $#new_list);
+   #      print "yikes!\n";
+      }
+     # else { print "fuck!\n";}
+      #=~ /nop|\s*|glo|end|fnc|prm|loc|tmp|str|stk/ ;
+      $i +=1;
+
+   while( $il[$i] ->{"LEADER"}  != 1 && $i<= $lastelt){
+##print"NOTLEADER $i $lastelt ====";
+
+ #     print_instr ($il[$i] );
+      if (! ($il[$i] -> {"OPCODE"} 
+         =~ /nop|fnc|prm|loc|tmp|glo|stk|end|xit|str|^$/ )){
+      #if (! $il[$i] -> {"OPCODE"} =~ /nop|\s*|glo|end|str|stk/){
+         push @new_list , $il[$i] ;
+   #      printf ("size %d\n", $#new_list);
+         }
+
+      #   unless $il[$i] -> {"OPCODE"} 
+      #=~ /nop|\s*|glo|end|str|stk/ ;
+      $i +=1;
+   }
+   #printf ("size %d\n", $#new_list);
+   $i -=1; #one step before the last
+   return ($i, \@new_list);
+}
+      
+
+
+sub mark_leader{
+   my $func_list_ref = shift;
+   my @func_list = @$func_list_ref;
+
+   foreach $function (@func_list){
+      $func_name = $function -> {"NAME"};
+      #printf ("func name: %s\n", $func_name);
+      $func_instr_list_ref =  $function -> {"INSTR_PTR"};
+      @instr_list = @$func_instr_list_ref;
+
+      $instr_num =0;
+      $prev_instr ="";
+      @jmplabels=();
+      foreach $instr (@instr_list){
+         $instr_op = $instr -> {"OPCODE"};
+         if ($instr_op) {
+            $instr_num += 1;
+            ### 2-1a,2-1d
+            $instr->{"LEADER"} = 1 if ($prev_instr =~ /ret/);
+            $instr->{"LEADER"} = 1 if $instr_num == 1 ; 
+            if (isjump($instr_op) ){
+               push @jmplabels, ( $instr_op =~ /jmp/) ?  
+                  $instr -> {"OPR1"} : $instr -> {"OPR3"};
+               }
+         }
+
+         $prev_instr = $instr_op;
+      }
+      ##second scan for target of a jump 2-1b and 2-1c
+
+      $next_instr_leader =0;
+      foreach $instr (@instr_list){
+         $instr_op =  $instr -> {"OPCODE"};
+         $instr_label = $instr -> {"LABEL"};
+
+         if ( grep {$_ eq $instr_label} @jmplabels) {
+            #print "match label $instr_label\n";
+            if ($instr_op){
+               $instr->{"LEADER"} = 1; 
+            }else{
+               $next_instr_leader =1;
+            }
+         }elsif ($instr_op && $next_instr_leader){
+            $instr->{"LEADER"} = 1; 
+            $next_instr_leader =0;
+         }
+      }
+      ###################checking
+      #foreach $instr (@instr_list){
+         #$instr_op = $instr -> {"OPCODE"};
+         #printf("line %d op: %s, leader %d\n",
+         #  $instr->{"LINE"} ,$instr_op, $instr ->{"LEADER"} );
+        #printf(" is a jump %s\n", $instr_op) if (isjump($instr_op));
+      #}
+   }
+
+}
+
+sub isjump{
+   my $opcode = shift;
+   return ($opcode =~ /jeq|jne|jlt|jge|jgt|jle|jmp/)
+}
+
+
+sub print_str_list{
+   my @printout;
+   my @node_list = @$str_list;
+   for($x =0 ; $x< $#node_list + 1; $x = $x +1 ){
+      print_asm($node_list[$x] -> {"NAME"}.":" , ".asciz",
+         $node_list[$x] -> {"STR"} );
+   }
+}
+
+###code generation
+sub code_gen{
+   print FH_ASM ".text\n";
+   my @node_list = @$str_list;
+   for($x =0 ; $x< $#node_list + 1; $x = $x +1 ){
+      $result = 
+         sprintf ("%-7s  %-10s %s\n", $node_list[$x] -> {"NAME"} . ":", 
+            ".asciz", $node_list[$x] -> {"STR"} );
+      print FH_ASM $result;
+   }
+
+   print FH_ASM "\n.bss\n         .align      4\n";
+   @node_list = @$glo_list;
+   ##get aligned global first
+   for($x =0 ; $x< $#node_list + 1; $x = $x +1 ){
+      $unitsize = $node_list[$x] -> {"SIZE"} ;
+      if ($unitsize == 4){
+         $name = $node_list[$x] -> {"NAME"};
+         $dim = $node_list[$x] -> {"DIM"};
+         $totalsize = $dim * $unitsize;
+         $totalsize = ($totalsize) ? $totalsize : $unitsize;
+         $result = sprintf ("%-7s  %-10s %s\n", $name . ":", 
+            ".skip", $totalsize );
+         print FH_ASM $result;
+      }
+   }
+   for($x =0 ; $x< $#node_list + 1; $x = $x +1 ){
+      $unitsize = $node_list[$x] -> {"SIZE"} ;
+      if ($unitsize != 4){
+         $name = $node_list[$x] -> {"NAME"};
+         $dim = $node_list[$x] -> {"DIM"};
+         $totalsize = $dim * $unitsize;
+         $totalsize = ($totalsize) ? $totalsize : $unitsize;
+         $result = sprintf ("%-7s  %-10s %s\n", $name . ":", 
+            ".skip", $totalsize );
+         print FH_ASM $result;
+      }
+   }
+   print FH_ASM "\n.text\n         .align      4\n";
+   @node_list = @$func_list;
+   for($x =0 ; $x< $#node_list + 1; $x = $x +1 ){
+         $name = $node_list[$x] -> {"NAME"};
+         $result = 
+            sprintf ("         .global %s\n  %s\n\n", $name, $name . ":");
+         print FH_ASM $result;
+   }
+}
+
+### new stuff starting here
+# asg 4 
+# computing next use and aliasing
+# take in a list of BB and add next-use and aliasing info
+#
+# bb_list is a global list of basic blocks
+
+
+sub storage_node{ 
+   ($name, $type)=remove_prt($icolist[$i]{"OPR3"}); 
+   $dim = $icolist[$i]{"OPR1"};
+   $size = $sizeoftype{$type};
+   $tsize = $size * $dim;
+   $_ = $type;
+
+   if ($icolist[$i]{"OPCODE"} eq "prm") {
+      $type = $type;
+   } else{
+      $type = $type . "[]" if ( $dim >1 &&   
+         rindex($type, "*") <0 ); 
+   }
+
+   $dim = ($dim > 1) ? $dim : "?";
+
+   $node = {}; # a new gloeter node
+   $node -> {"SCOPE"} = "L";
+   $node -> {"NAME"} = $name;
+   $node -> {"TYPE"} = $type;
+   $node -> {"DIM"} = $dim;
+   $node -> {"TSIZE"} = $tsize;
+   $node -> {"SIZE"} = $size;
+   $node -> {"ALIGN"} = $size;
+   $node -> {"BASE"}  = "%fp"; 
+   $node -> {"DISP"} = "?"; 
+   $node -> {"REG"}= "?" ; 
+
+   return $node;
+}
+
+sub remove_prt{ 
+   $_ = shift;
+   if(/\(\*\)/){ # is a pointer 
+      $varname = $'; 
+      $type = $icolist[$i]{"OPR2"} . "*";
+   }else { 
+      $varname = $icolist[$i]{"OPR3"}; 
+      $type = $icolist[$i]{"OPR2"}; 
+   }
+   return ($varname, $type);
+}
+
+sub print_string_const{
+   my $node_list_ref = shift;
+   my @node_list = @$node_list_ref;
+   my $x;
+   for($x =0 ; $x< $#node_list + 1; $x = $x +1 ){
+     $name =  $node_list[$x] ->{"NAME"};
+     $str =  $node_list[$x] ->{"STR"};
+      $result = sprintf ("   %-10s      %-45s\n", $name, $str);
+      print FH_ISY $result;
+   }
+}
+
+sub print_storage_node{
+   my $node_list_ref = shift;
+   my @node_list = @$node_list_ref;
+   my $x;
+   for($x =0 ; $x< $#node_list + 1; $x = $x +1 ){
+     $scope =  $node_list[$x] ->{"SCOPE"};
+     $name =  $node_list[$x] ->{"NAME"};
+     $type =  $node_list[$x] ->{"TYPE"};
+     $dim =  $node_list[$x] ->{"DIM"};
+     $size =  $node_list[$x] ->{"SIZE"};
+     $align =  $node_list[$x] ->{"ALIGN"};
+     $base =  $node_list[$x] ->{"BASE"};
+     $disp =  $node_list[$x] ->{"DISP"};
+      $disp = ($disp>0) ?  "+" . $disp : $disp;
+     $reg =  $node_list[$x] ->{"REG"};
+      $result = 
+         sprintf ("%s  %-25s %-6s %-5s %-5s %-5s %-5s %6s   %-4s\n", 
+         $scope, $name, $type, $dim, $size, $align, $base, $disp,  $reg);
+      print FH_ISY $result;
+   }
+}
+
+sub print_func_list{
+   my $node_list_ref = shift;
+   my @node_list = @$node_list_ref;
+   my $x;
+   for($x =0 ; $x< $#node_list + 1; $x = $x +1 ){
+      $name =  $node_list[$x] -> {"NAME"};
+      $return=  $node_list[$x] -> {"RETURN"};
+      $param=  $node_list[$x] -> {"PARAM"};
+      $local =  $node_list[$x] -> {"LOCAL"};
+      $temp =  $node_list[$x] -> {"TEMP"};
+      $frame =  $node_list[$x] -> {"FRAME"};
+      print FH_ISY "\n" x 2 ;
+      print FH_ISY "-" x 75 . "\n";
+      $result = 
+         sprintf("   %-25s %-6s %-5s %-5s %-5s %-5s \n", "Function", 
+         "return", "param", "local", "temp", "frame");
+      print FH_ISY $result;
+      $result = 
+         sprintf("   %-25s %-6s %-5s %-5s %-5s %-5s \n", $name , $return, 
+         $param, $local, $temp, $frame);
+      print FH_ISY $result;
+      print FH_ISY "=" x 75 . "\n";
+      $result = 
+         sprintf("   %-25s %-6s %-5s %-5s %-5s %-5s    %-5s %-5s \n", 
+         "name", "type", "dim", "size", "align", "base", "disp", "reg");
+      print FH_ISY $result;
+
+      print_storage_node($node_list[$x] ->{"PARAM_LIST"});
+      print_storage_node($node_list[$x] ->{"LOCAL_LIST"});
+      print_storage_node($node_list[$x] ->{"TMP_LIST"});
+   }
+}
+
+sub print_instr_list{
+   my $ref = shift;
+   my @il =@$ref; 
+   my $x;
+   print "PRINT ISNTR LIST\n";
+   for($x =0 ; $x< $#il + 1; $x = $x +1 ){
+      print_instr ($il[$x]) ;
+   }
+
+
+}
+
+
+
+# new print function for assignment number 4.
+sub print_instr{
+   $a = shift;
+   printf("l:%-5d %-5s %-20s %-20s %-10s\n", 
+      $a->{"LINE"}, $a->{"OPCODE"}, 
+      $a->{"OPR1"},
+      $a->{"OPR2"},
+      $a->{"OPR3"},
+      );
+   }
+sub dump_reg_array {
+   my $i;
+   print"DUMP\n";
+   for($i=0; $i< $#register_table +1; $i = $i +1) {
+      printf("reg[%s] = %s\n", $i, $register_table[$i] );
+   }
+}
+
+#dump_func_list( $func_list);
+sub dump_func_list {
+   my $node_list_ref = shift;
+   my @node_list = @$node_list_ref;
+   my $x;
+   for($x =0 ; $x< $#node_list + 1; $x = $x +1 ){
+      printf("FName %s \n", $node_list[$x] -> {"NAME"});
+      $bb_list_ref = $node_list[$x] ->{"BB_LIST"};
+      @bb = @$bb_list_ref;
+      foreach $bb_node (@$bb_list_ref){
+      #foreach $bb_node (@bb){
+         printf("BBID %s \n", $bb_node->{"BBOX"});
+         $il_ref = $bb_node ->{"IL"};
+         for $il (@$il_ref){
+            print_instr($il);
+         }
+      }
+   }
+}

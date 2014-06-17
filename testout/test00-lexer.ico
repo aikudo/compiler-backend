@@ -1,0 +1,50 @@
+#Icode begin_time: 1997/02/25 17:54:08 PST
+#Icode compiler_name: c0
+#Icode src_filename: test00-lexer.c0
+#Icode pfx_filename: test00-lexer
+#    1: /* $RCSfile: test00-lexer.ico,v $ $Revision: 353.1 $ */
+#    2: #include "c0-lib.h"
+#    3: 
+#    4: !=
+#    5: "%35.0f = %2d!\n"
+#    6: "This is a test string"
+#    7: %
+#    8: &
+#    9: '\''
+#   10: 'c'
+#   11: 'x'
+#   12: (
+#   13: )
+#   14: *
+#   15: +
+#   16: ,
+#   17: -
+#   18: /
+#   19: 123456789
+#   20: 31
+#   21: ;
+#   22: <
+#   23: <=
+#   24: =
+#   25: ==
+#   26: >
+#   27: >=
+#   28: [
+#   29: ]
+#   30: char
+#   31: counter
+#   32: double
+#   33: else
+#   34: factorial
+#   35: hello
+#   36: if
+#   37: int
+#   38: main
+#   39: return
+#   40: void
+#   41: while
+#   42: {
+#   43: }
+#
+          xit   10 # /*-ERROR-*/ # ERROR # _ERR_TOKEN.44000
+#Icode end: 0 labels, 1 opcodes, 1 errors.

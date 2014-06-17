@@ -1,0 +1,179 @@
+#Icode begin_time: 1996/03/05 16:03:26 PST
+#Icode compiler_name: c0
+#Icode src_filename: test07.c0
+#Icode pfx_filename: test07
+#    1: /* $RCSfile: test07.ico,v $ $Revision: 353.1 $ */
+#    2: #include "c0-lib.h"
+#    3: 
+#    4: int main( )
+#    5: {
+#    6: 
+#    7:    int i2;
+#    8:    int i3;
+#    9:    int ia;
+#   10:    int is;
+#   11:    int im;
+#   12:    int id;
+#   13:    int ir;
+#   14:    int ip;
+#   15:    int in;
+#   16: 
+#   17:    char c2;
+#   18:    char c3;
+#   19:    char ca;
+#   20:    char cs;
+#   21:    char cm;
+#   22:    char cd;
+#   23:    char cr;
+#   24:    char cp;
+#   25:    char cn;
+#   26: 
+#   27:    i2 = 19;
+#   28:    i3 = 4;
+#   29:    c2 = 'e';
+#   30:    c3 = ' ';
+#   31: 
+#   32:    puti( ia = i2 + i3 );
+#   33:    puti( is = i2 - i3 );
+#   34:    puti( im = i2 * i3 );
+#   35:    puti( id = i2 / i3 );
+#   36:    puti( ir = i2 % i3 );
+#   37:    puti( ip = + i3 );
+#   38:    puti( in = - i3 );
+#   39: 
+#   40:    puti( ca = c2 + c3 );
+#   41:    puti( cs = c2 - c3 );
+#   42:    puti( cm = c2 * c3 );
+#   43:    puti( cd = c2 / c3 );
+#   44:    puti( cr = c2 % c3 );
+#   45:    puti( cp = + c3 );
+#   46:    puti( cn = - c3 );
+#   47: 
+#   48: }
+#
+#
+_main:    fnc   0 int
+          loc   1 int _i2.1
+          loc   1 int _i3.1
+          loc   1 int _ia.1
+          loc   1 int _is.1
+          loc   1 int _im.1
+          loc   1 int _id.1
+          loc   1 int _ir.1
+          loc   1 int _ip.1
+          loc   1 int _in.1
+          loc   1 char _c2.1
+          loc   1 char _c3.1
+          loc   1 char _ca.1
+          loc   1 char _cs.1
+          loc   1 char _cm.1
+          loc   1 char _cd.1
+          loc   1 char _cr.1
+          loc   1 char _cp.1
+          loc   1 char _cn.1
+          mov   19 _i2.1
+          mov   4 _i3.1
+          mov   'e' _c2.1
+          mov   '\040' _c3.1
+          tmp   1 int t4
+          add   _i2.1 _i3.1 t4
+          mov   t4 _ia.1
+          arg   0 _puti _ia.1
+          tmp   1 int t6
+          cal   1 _puti t6
+          tmp   1 int t7
+          sub   _i2.1 _i3.1 t7
+          mov   t7 _is.1
+          arg   0 _puti _is.1
+          tmp   1 int t9
+          cal   1 _puti t9
+          tmp   1 int t10
+          mul   _i2.1 _i3.1 t10
+          mov   t10 _im.1
+          arg   0 _puti _im.1
+          tmp   1 int t12
+          cal   1 _puti t12
+          tmp   1 int t13
+          div   _i2.1 _i3.1 t13
+          mov   t13 _id.1
+          arg   0 _puti _id.1
+          tmp   1 int t15
+          cal   1 _puti t15
+          tmp   1 int t16
+          rem   _i2.1 _i3.1 t16
+          mov   t16 _ir.1
+          arg   0 _puti _ir.1
+          tmp   1 int t18
+          cal   1 _puti t18
+          tmp   1 int t19
+          add   0 _i3.1 t19
+          mov   t19 _ip.1
+          arg   0 _puti _ip.1
+          tmp   1 int t21
+          cal   1 _puti t21
+          tmp   1 int t22
+          sub   0 _i3.1 t22
+          mov   t22 _in.1
+          arg   0 _puti _in.1
+          tmp   1 int t24
+          cal   1 _puti t24
+          tmp   1 char t25
+          add   _c2.1 _c3.1 t25
+          mov   t25 _ca.1
+          tmp   1 int t27
+          mov   _ca.1 t27
+          arg   0 _puti t27
+          tmp   1 int t28
+          cal   1 _puti t28
+          tmp   1 char t29
+          sub   _c2.1 _c3.1 t29
+          mov   t29 _cs.1
+          tmp   1 int t31
+          mov   _cs.1 t31
+          arg   0 _puti t31
+          tmp   1 int t32
+          cal   1 _puti t32
+          tmp   1 char t33
+          mul   _c2.1 _c3.1 t33
+          mov   t33 _cm.1
+          tmp   1 int t35
+          mov   _cm.1 t35
+          arg   0 _puti t35
+          tmp   1 int t36
+          cal   1 _puti t36
+          tmp   1 char t37
+          div   _c2.1 _c3.1 t37
+          mov   t37 _cd.1
+          tmp   1 int t39
+          mov   _cd.1 t39
+          arg   0 _puti t39
+          tmp   1 int t40
+          cal   1 _puti t40
+          tmp   1 char t41
+          rem   _c2.1 _c3.1 t41
+          mov   t41 _cr.1
+          tmp   1 int t43
+          mov   _cr.1 t43
+          arg   0 _puti t43
+          tmp   1 int t44
+          cal   1 _puti t44
+          tmp   1 char t45
+          add   0 _c3.1 t45
+          mov   t45 _cp.1
+          tmp   1 int t47
+          mov   _cp.1 t47
+          arg   0 _puti t47
+          tmp   1 int t48
+          cal   1 _puti t48
+          tmp   1 char t49
+          sub   0 _c3.1 t49
+          mov   t49 _cn.1
+          tmp   1 int t51
+          mov   _cn.1 t51
+          arg   0 _puti t51
+          tmp   1 int t52
+          cal   1 _puti t52
+	ret 0
+          xit   11
+          end
+#Icode end: 1 labels, 123 opcodes, 0 errors.

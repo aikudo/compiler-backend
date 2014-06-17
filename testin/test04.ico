@@ -1,0 +1,21 @@
+#Icode begin_time: 1995/11/13 13:56:13 PST
+#Icode compiler_name: c0
+#Icode src_filename: test04.c0
+#Icode pfx_filename: test04
+#    1: /* $RCSfile: test04.ico,v $ $Revision: 353.1 $ */
+#    2: #include "c0-lib.h"
+#    3: 
+#    4: char *foo;
+#    5: char **bar;
+#    6: char ***baz;
+#    7: char ****quux;
+#    8: 
+#    9: /* This comment never ends...
+#   10: 
+#   11: <<*EOF*>>
+#
+          glo   1 char *_foo
+          glo   1 void *_bar
+          glo   1 void *_baz
+          glo   1 void *_quux
+#Icode end: 0 labels, 4 opcodes, 0 errors.

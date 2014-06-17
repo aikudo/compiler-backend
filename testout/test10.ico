@@ -1,0 +1,44 @@
+#Icode begin_time: 1995/11/13 13:56:21 PST
+#Icode compiler_name: c0
+#Icode src_filename: test10.c0
+#Icode pfx_filename: test10
+#    1: /* $RCSfile: test10.ico,v $$Revision: 353.1 $ */
+#    2: #include "c0-lib.h"
+#    3: 
+#    4: int main( int argc, char **argv )
+#    5: {
+#    6:    int count;
+#    7:    count = 0;
+#    8:    while( count < argc ){
+#    9:       puts( argv[ count ] );
+#   10:       putc( '\n' );
+#   11:       count = count + 1;
+#   12:    };
+#   13:    return count;
+#   14: }
+#
+#
+_main:    fnc   2 int
+          prm   0 int _argc.1
+          prm   1 void *_argv.1
+          loc   1 int _count.1
+          mov   0 _count.1
+wh8008:   jge   _count.1 _argc.1 br8008
+lp8008:
+          tmp   1 char *t2
+          idx   _argv.1 _count.1 t2
+          arg   0 _puts *t2
+          tmp   1 int t3
+          cal   1 _puts t3
+          arg   0 _putc '\n'
+          tmp   1 int t4
+          cal   1 _putc t4
+          tmp   1 int t5
+          add   _count.1 1 t5
+          mov   t5 _count.1
+co8008:   jmp   wh8008
+br8008:
+          ret   _count.1
+          xit   11
+          end
+#Icode end: 5 labels, 21 opcodes, 0 errors.

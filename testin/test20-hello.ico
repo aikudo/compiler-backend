@@ -1,0 +1,39 @@
+#Icode begin_time: 1997/02/25 17:54:12 PST
+#Icode compiler_name: c0
+#Icode src_filename: test20-hello.c0
+#Icode pfx_filename: test20-hello
+#    1: /* $RCSfile: test20-hello.ico,v $ $Revision: 353.1 $ */
+#    2: #include "c0-lib.h"
+#    3: 
+#    4: int main( ){
+#    5:    puts( "Hello, World.\n" );
+#    6:    putc( '\n' );
+#    7:    puti( 2147483647 );
+#    8:    putc( '\n' );
+#    9:    exit( 0 );
+#   10:    return 0;
+#   11: }
+#   12: 
+#
+#
+_main:    fnc   0 int
+          str   s0 "Hello,\040World.\n"
+          arg   0 _puts s0
+          tmp   1 int t1
+          cal   1 _puts t1
+          arg   0 _putc '\n'
+          tmp   1 int t2
+          cal   1 _putc t2
+          arg   0 _puti 2147483647
+          tmp   1 int t3
+          cal   1 _puti t3
+          arg   0 _putc '\n'
+          tmp   1 int t4
+          cal   1 _putc t4
+          arg   0 _exit 0
+          tmp   1 int t5
+          cal   1 _exit t5
+          ret   0
+          xit   11
+          end
+#Icode end: 1 labels, 20 opcodes, 0 errors.

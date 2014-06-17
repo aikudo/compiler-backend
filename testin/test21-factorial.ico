@@ -1,0 +1,115 @@
+#Icode begin_time: 1997/02/25 17:54:13 PST
+#Icode compiler_name: c0
+#Icode src_filename: test21-factorial.c0
+#Icode pfx_filename: test21-factorial
+#    1: /* $RCSfile: test21-factorial.ico,v $ $Revision: 353.1 $ */
+#    2: #include "c0-lib.h"
+#    3: 
+#    4: int global_int;
+#    5: int global_array[ 99 ];
+#    6: int many_times;
+#    7: 
+#    8: void mul_int( int *number, int int_num )
+#    9: {
+#   10:    int many_times;
+#   11:    *number = *number * int_num;
+#   12: }
+#   13: 
+#   14: int main( ){
+#   15:    int counter;
+#   16:    int factorial;
+#   17:    int many_times;
+#   18: 
+#   19:    counter = 0;
+#   20:    factorial = 1;
+#   21:    while( counter <= 31 ){
+#   22:       if( counter == 0 ){
+#   23:          factorial = 1;
+#   24:          global_int = global_int * 3;
+#   25:          global_int = ( global_int - factorial ) * 623;
+#   26:       }else{
+#   27:          mul_int( &factorial, counter );
+#   28:          global_array[ counter ] = factorial;
+#   29:          global_int = factorial;
+#   30:       };
+#   31:          
+#   32:       puti( factorial );
+#   33:       puts( " = " );
+#   34:       puti( counter );
+#   35:       puts( "!\n" );
+#   36:       counter = counter + 1;
+#   37:    };
+#   38:    return 0;
+#   39: }
+#
+          glo   1 int _global_int
+          glo   99 int _global_array
+          glo   1 int _many_times
+#
+_mul_int: fnc   2 void
+          prm   0 int *_number.1
+          prm   1 int _int_num.1
+          loc   1 int _many_times.1
+          tmp   1 int *t0
+          mov   _number.1 t0
+          tmp   1 int *t1
+          mov   _number.1 t1
+          tmp   1 int t2
+          mul   *t1 _int_num.1 t2
+          mov   t2 *t0
+          ret   void
+          end
+#
+_main:    fnc   0 int
+          loc   1 int _counter.2
+          loc   1 int _factorial.2
+          loc   1 int _many_times.2
+          mov   0 _counter.2
+          mov   1 _factorial.2
+wh21008:  jgt   _counter.2 31 br21008
+lp21008:
+if22008:  jne   _counter.2 0 el22008
+th22008:
+          mov   1 _factorial.2
+          tmp   1 int t9
+          mul   _global_int 3 t9
+          mov   t9 _global_int
+          tmp   1 int t11
+          sub   _global_int _factorial.2 t11
+          tmp   1 int t12
+          mul   t11 623 t12
+          mov   t12 _global_int
+          jmp   fi22008
+el22008:
+          arg   0 _mul_int &_factorial.2
+          arg   1 _mul_int _counter.2
+          tmp   1 void t15
+          cal   2 _mul_int t15
+          tmp   1 int *t16
+          idx   &_global_array _counter.2 t16
+          mov   _factorial.2 *t16
+          mov   _factorial.2 _global_int
+fi22008:
+          arg   0 _puti _factorial.2
+          tmp   1 int t19
+          cal   1 _puti t19
+          str   s20 "\040=\040"
+          arg   0 _puts s20
+          tmp   1 int t21
+          cal   1 _puts t21
+          arg   0 _puti _counter.2
+          tmp   1 int t22
+          cal   1 _puti t22
+          str   s23 "!\n"
+          arg   0 _puts s23
+          tmp   1 int t24
+          cal   1 _puts t24
+          tmp   1 int t25
+          add   _counter.2 1 t25
+          mov   t25 _counter.2
+co21008:  jmp   wh21008
+br21008:
+          ret   0
+          xit   11
+          end
+#Icode end: 10 labels, 63 opcodes, 0 errors.

@@ -1,0 +1,95 @@
+#Icode begin_time: 1997/02/25 17:54:16 PST
+#Icode compiler_name: c0
+#Icode src_filename: test50-misc.c0
+#Icode pfx_filename: test50-misc
+#    1: 
+#    2: /* #define MAX_ARRAY_LEN   25 */
+#    3: #include "c0-lib.h"
+#    4: 
+#    5: int int_array[ 25 ];
+#    6: 
+#    7: int flip_high_bit (int number, int upperbound){
+#    8:    int half_val;
+#    9: 
+#   10:    half_val = upperbound / 2;
+#   11: 
+#   12:    if (number < half_val){
+#   13:       /* high bit is zero, can flip by adding
+#   14:        * half_val
+#   15:        */
+#   16:       return (number + half_val);
+#   17:    }else{
+#   18:       /* high  bit is one, can zero by 
+#   19:        * subtracting half_val
+#   20:        */
+#   21:       return (number - half_val);
+#   22:    }
+#   23: }
+#   24: 
+#   25: int main (){
+#   26:    int i;
+#   27: 
+#   28:    i =  0;
+#   29: 
+#   30:    /*  apply flip to all array elements */
+#   31:    while (i < 25 /* MAX_ARRAY_LEN */){
+#   32:       int_array[ i ] = flip_high_bit (int_array[ i ], 256);
+#   33:       i = i + 1;
+#   34:    }
+#   35: 
+#   36:    puts ("We're done\n");
+#   37:    return 0;
+#   38: }
+#   39: 
+#
+          glo   25 int _int_array
+#
+_flip_high_bit:
+          fnc   2 int
+          prm   0 int _number.1
+          prm   1 int _upperbound.1
+          loc   1 int _half_val.1
+          tmp   1 int t0
+          div   _upperbound.1 2 t0
+          mov   t0 _half_val.1
+if12005:  jge   _number.1 _half_val.1 el12005
+th12005:
+          tmp   1 int t3
+          add   _number.1 _half_val.1 t3
+          ret   t3
+          jmp   fi12005
+el12005:
+          tmp   1 int t4
+          sub   _number.1 _half_val.1 t4
+          ret   t4
+fi12005:
+          xit   11
+          end
+#
+_main:    fnc   0 int
+          loc   1 int _i.2
+          mov   0 _i.2
+wh31008:  jge   _i.2 25 br31008
+lp31008:
+          tmp   1 int *t7
+          idx   &_int_array _i.2 t7
+          tmp   1 int *t8
+          idx   &_int_array _i.2 t8
+          arg   0 _flip_high_bit *t8
+          arg   1 _flip_high_bit 256
+          tmp   1 int t9
+          cal   2 _flip_high_bit t9
+          mov   t9 *t7
+          tmp   1 int t11
+          add   _i.2 1 t11
+          mov   t11 _i.2
+co31008:  jmp   wh31008
+br31008:
+          str   s13 "We're\040done\n"
+          arg   0 _puts s13
+          tmp   1 int t14
+          cal   1 _puts t14
+          ret   0
+          xit   11
+          end
+#Icode end: 10 labels, 42 opcodes, 0 errors.

@@ -1,0 +1,56 @@
+#Icode begin_time: 1997/02/25 17:54:12 PST
+#Icode compiler_name: c0
+#Icode src_filename: test15-nullfns.c0
+#Icode pfx_filename: test15-nullfns
+#    1: /* $RCSfile: test15-nullfns.ico,v $$Revision: 353.1 $ */
+#    2: 
+#    3: int xexit( int   n ){};
+#    4: int xgetc( char *c ){};
+#    5: int xgeti( int  *i ){};
+#    6: int xgets( char *s ){};
+#    7: int xputc( char  c ){};
+#    8: int xputi( int   i ){};
+#    9: int xputp( void *p ){};
+#   10: int xputs( char *s ){};
+#
+#
+_xexit:   fnc   1 int
+          prm   0 int _n.1
+          xit   11
+          end
+#
+_xgetc:   fnc   1 int
+          prm   0 char *_c.2
+          xit   11
+          end
+#
+_xgeti:   fnc   1 int
+          prm   0 int *_i.3
+          xit   11
+          end
+#
+_xgets:   fnc   1 int
+          prm   0 char *_s.4
+          xit   11
+          end
+#
+_xputc:   fnc   1 int
+          prm   0 char _c.5
+          xit   11
+          end
+#
+_xputi:   fnc   1 int
+          prm   0 int _i.6
+          xit   11
+          end
+#
+_xputp:   fnc   1 int
+          prm   0 void *_p.7
+          xit   11
+          end
+#
+_xputs:   fnc   1 int
+          prm   0 char *_s.8
+          xit   11
+          end
+#Icode end: 8 labels, 32 opcodes, 0 errors.

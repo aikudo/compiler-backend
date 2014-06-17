@@ -1,0 +1,133 @@
+#Icode begin_time: 1997/03/04 10:49:30 PST
+#Icode compiler_name: c0
+#Icode src_filename: test25-constfold.c0
+#Icode pfx_filename: test25-constfold
+#    1: /* $RCSfile: test25-constfold.ico,v $$Revision: 353.1 $ */
+#    2: #include "c0-lib.h"
+#    3: 
+#    4: /*
+#    5: * Does nothing much except for testing constant folding
+#    6: * and constant propagation.
+#    7: */
+#    8: 
+#    9: int pi(){
+#   10:    return
+#   11:    ((((( 3 ) * 10 + 1 ) * 10 + 4 ) * 10 + 1 ) * 10 + 5 ) * 10 + 9;
+#   12: };
+#   13: 
+#   14: int main( int argc, char **argv ){
+#   15:    int yes; int zero; int NULL;
+#   16:    yes = 3; zero = 0; NULL = 0;
+#   17:    /* Is the dead variable NULL eliminated? */
+#   18:    /* Are the dead params argc and argv eliminated? */
+#   19:    puts( "pi=" );
+#   20:    puti( pi() );
+#   21:    putc( '\n' );
+#   22:    if( 1!=0 ) puts( "one is true\n" );
+#   23:    if( 0!=0 ) puts( "zero is true\n" );
+#   24:    if( 1!=0 ){
+#   25:       puts( "if then else is true\n" );
+#   26:    }else{
+#   27:       puts( "if then else is false\n" );
+#   28:    };
+#   29:    if( yes != 0 ) puts( "This is harder to optimize.\n" );
+#   30:    if( zero != 0 ) puts( "This statement should never be printed.\n" );
+#   31:    return zero; /* do you load zero here or const 0? */
+#   32: };
+#
+#
+_pi:      fnc   0 int
+          tmp   1 int t0
+          mul   3 10 t0
+          tmp   1 int t1
+          add   t0 1 t1
+          tmp   1 int t2
+          mul   t1 10 t2
+          tmp   1 int t3
+          add   t2 4 t3
+          tmp   1 int t4
+          mul   t3 10 t4
+          tmp   1 int t5
+          add   t4 1 t5
+          tmp   1 int t6
+          mul   t5 10 t6
+          tmp   1 int t7
+          add   t6 5 t7
+          tmp   1 int t8
+          mul   t7 10 t8
+          tmp   1 int t9
+          add   t8 9 t9
+          ret   t9
+          xit   11
+          end
+#
+_main:    fnc   2 int
+          prm   0 int _argc.2
+          prm   1 void *_argv.2
+          loc   1 int _yes.2
+          loc   1 int _zero.2
+          loc   1 int _NULL.2
+          mov   3 _yes.2
+          mov   0 _zero.2
+          mov   0 _NULL.2
+          str   s13 "pi="
+          arg   0 _puts s13
+          tmp   1 int t14
+          cal   1 _puts t14
+          tmp   1 int t15
+          cal   0 _pi t15
+          arg   0 _puti t15
+          tmp   1 int t16
+          cal   1 _puti t16
+          arg   0 _putc '\n'
+          tmp   1 int t17
+          cal   1 _putc t17
+if22005:  jeq   1 0 el22005
+th22005:
+          str   s19 "one\040is\040true\n"
+          arg   0 _puts s19
+          tmp   1 int t20
+          cal   1 _puts t20
+el22005:
+fi22005:
+if23005:  jeq   0 0 el23005
+th23005:
+          str   s22 "zero\040is\040true\n"
+          arg   0 _puts s22
+          tmp   1 int t23
+          cal   1 _puts t23
+el23005:
+fi23005:
+if24005:  jeq   1 0 el24005
+th24005:
+          str   s25 "if\040then\040else\040is\040true\n"
+          arg   0 _puts s25
+          tmp   1 int t26
+          cal   1 _puts t26
+          jmp   fi24005
+el24005:
+          str   s27 "if\040then\040else\040is\040false\n"
+          arg   0 _puts s27
+          tmp   1 int t28
+          cal   1 _puts t28
+fi24005:
+if29005:  jeq   _yes.2 0 el29005
+th29005:
+          str   s30 "This\040is\040harder\040to\040optimize.\n"
+          arg   0 _puts s30
+          tmp   1 int t31
+          cal   1 _puts t31
+el29005:
+fi29005:
+if30005:  jeq   _zero.2 0 el30005
+th30005:
+          str   s33 "This\040statement\040should\040never\040be\040printed.\n"
+          arg   0 _puts s33
+          tmp   1 int t34
+          cal   1 _puts t34
+el30005:
+fi30005:
+          ret   _zero.2
+          xit   11
+          end
+#Icode end: 22 labels, 78 opcodes, 0 errors.

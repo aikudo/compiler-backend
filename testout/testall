@@ -1,0 +1,2 @@
+#!/bin/sh
+for i in *.ico; do icoasm $i; done

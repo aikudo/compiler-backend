@@ -1,0 +1,31 @@
+#Icode begin_time: 1995/11/13 13:56:10 PST
+#Icode compiler_name: c0
+#Icode src_filename: test01.c0
+#Icode pfx_filename: test01
+#    1: /* $RCSfile: test01.ico,v $ $Revision: 353.1 $ */
+#    2: #include "c0-lib.h"
+#    3: 
+#    4: "%35.0f = %2d!\n"
+#    5: "This is a test string"
+#    6: (
+#    7: )
+#    8: +
+#    9: 123456789
+#   10: 31
+#   11: ;
+#   12: <=
+#   13: =
+#   14: >
+#   15: counter
+#   16: double
+#   17: factorial
+#   18: hello
+#   19: int
+#   20: main
+#   21: void
+#   22: while
+#   23: {
+#   24: }
+#
+          xit   10 # /*-ERROR-*/ # ERROR # _ERR_TOKEN.25000
+#Icode end: 0 labels, 1 opcodes, 1 errors.

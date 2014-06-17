@@ -1,0 +1,87 @@
+#Icode begin_time: 1995/11/13 13:56:20 PST
+#Icode compiler_name: c0
+#Icode src_filename: test09.c0
+#Icode pfx_filename: test09
+#    1: /* $RCSfile: test09.ico,v $ $Revision: 353.1 $ */
+#    2: #include "c0-lib.h"
+#    3: 
+#    4: int main( )
+#    5: {
+#    6:    char c;
+#    7:    int i;
+#    8:    char s[500];
+#    9:    int eof;
+#   10:    int len;
+#   11: 
+#   12:    eof = getc( &c );
+#   13:    eof = geti( &i );
+#   14:    eof = gets( s );
+#   15: 
+#   16:    len = putc( c );
+#   17:    len = puti( i );
+#   18:    len = putp( s );
+#   19:    len = puts( s );
+#   20: 
+#   21:    len = putc( 'c' );
+#   22:    len = puti( 123 );
+#   23:    len = putp( "\nHello, world!\n" );
+#   24:    len = puts( "\nHello, world!\n" );
+#   25: };
+#
+#
+_main:    fnc   0 int
+          loc   1 char _c.1
+          loc   1 int _i.1
+          loc   500 char _s.1
+          loc   1 int _eof.1
+          loc   1 int _len.1
+          arg   0 _getc &_c.1
+          tmp   1 int t1
+          cal   1 _getc t1
+          mov   t1 _eof.1
+          arg   0 _geti &_i.1
+          tmp   1 int t4
+          cal   1 _geti t4
+          mov   t4 _eof.1
+          arg   0 _gets &_s.1
+          tmp   1 int t6
+          cal   1 _gets t6
+          mov   t6 _eof.1
+          arg   0 _putc _c.1
+          tmp   1 int t8
+          cal   1 _putc t8
+          mov   t8 _len.1
+          arg   0 _puti _i.1
+          tmp   1 int t10
+          cal   1 _puti t10
+          mov   t10 _len.1
+          arg   0 _putp &_s.1
+          tmp   1 int t12
+          cal   1 _putp t12
+          mov   t12 _len.1
+          arg   0 _puts &_s.1
+          tmp   1 int t14
+          cal   1 _puts t14
+          mov   t14 _len.1
+          arg   0 _putc 'c'
+          tmp   1 int t16
+          cal   1 _putc t16
+          mov   t16 _len.1
+          arg   0 _puti 123
+          tmp   1 int t18
+          cal   1 _puti t18
+          mov   t18 _len.1
+          str   s20 "\nHello,\040world!\n"
+          arg   0 _putp s20
+          tmp   1 int t21
+          cal   1 _putp t21
+          mov   t21 _len.1
+          str   s23 "\nHello,\040world!\n"
+          arg   0 _puts s23
+          tmp   1 int t24
+          cal   1 _puts t24
+          mov   t24 _len.1
+	ret 0
+          xit   11
+          end
+#Icode end: 1 labels, 54 opcodes, 0 errors.

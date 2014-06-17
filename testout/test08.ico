@@ -1,0 +1,273 @@
+#Icode begin_time: 1996/03/05 16:09:38 PST
+#Icode compiler_name: c0
+#Icode src_filename: test08.c0
+#Icode pfx_filename: test08
+#    1: /* $RCSfile: test08.ico,v $ $Revision: 353.1 $ */
+#    2: #include "c0-lib.h"
+#    3: 
+#    4: int main( )
+#    5: {
+#    6:    int i1; int i2; int i3;
+#    7:    char c1; char c2; char c3;
+#    8: 
+#    9:    i1 = 6; i2 = 8; i3 = 0;
+#   10:    c1 = 'a'; c2 = 'b'; c3 = 0;
+#   11: 
+#   12:    if( i1 == i2 ){ i3 = i3 * 10 + 1; }else{ i3 = i3 * 10 + 0; };
+#   13:    if( i1 != i2 ){ i3 = i3 * 10 + 1; }else{ i3 = i3 * 10 + 0; };
+#   14:    if( i1 <  i2 ){ i3 = i3 * 10 + 1; }else{ i3 = i3 * 10 + 0; };
+#   15:    if( i1 >= i2 ){ i3 = i3 * 10 + 1; }else{ i3 = i3 * 10 + 0; };
+#   16:    if( i1 >  i2 ){ i3 = i3 * 10 + 1; }else{ i3 = i3 * 10 + 0; };
+#   17:    if( i1 <= i2 ){ i3 = i3 * 10 + 1; }else{ i3 = i3 * 10 + 0; };
+#   18:    puti( i3 );
+#   19:    putc( '\n' );
+#   20: 
+#   21:    i3 = 0;
+#   22:    if( c1 == c2 ){ i3 = i3 * 10 + '1'; }else{ i3 = i3 * 10 + '0'; };
+#   23:    if( c1 != c2 ){ i3 = i3 * 10 + '1'; }else{ i3 = i3 * 10 + '0'; };
+#   24:    if( c1 <  c2 ){ i3 = i3 * 10 + '1'; }else{ i3 = i3 * 10 + '0'; };
+#   25:    if( c1 >= c2 ){ i3 = i3 * 10 + '1'; }else{ i3 = i3 * 10 + '0'; };
+#   26:    if( c1 >  c2 ){ i3 = i3 * 10 + '1'; }else{ i3 = i3 * 10 + '0'; };
+#   27:    if( c1 <= c2 ){ i3 = i3 * 10 + '1'; }else{ i3 = i3 * 10 + '0'; };
+#   28:    puti( i3 );
+#   29:    putc( '\n' );
+#   30: 
+#   31: }
+#
+#
+_main:    fnc   0 int
+          loc   1 int _i1.1
+          loc   1 int _i2.1
+          loc   1 int _i3.1
+          loc   1 char _c1.1
+          loc   1 char _c2.1
+          loc   1 char _c3.1
+          mov   6 _i1.1
+          mov   8 _i2.1
+          mov   0 _i3.1
+          mov   'a' _c1.1
+          mov   'b' _c2.1
+          tmp   1 char t5
+          mov   0 t5
+          mov   t5 _c3.1
+if12005:  jne   _i1.1 _i2.1 el12005
+th12005:
+          tmp   1 int t8
+          mul   _i3.1 10 t8
+          tmp   1 int t9
+          add   t8 1 t9
+          mov   t9 _i3.1
+          jmp   fi12005
+el12005:
+          tmp   1 int t11
+          mul   _i3.1 10 t11
+          tmp   1 int t12
+          add   t11 0 t12
+          mov   t12 _i3.1
+fi12005:
+if13005:  jeq   _i1.1 _i2.1 el13005
+th13005:
+          tmp   1 int t15
+          mul   _i3.1 10 t15
+          tmp   1 int t16
+          add   t15 1 t16
+          mov   t16 _i3.1
+          jmp   fi13005
+el13005:
+          tmp   1 int t18
+          mul   _i3.1 10 t18
+          tmp   1 int t19
+          add   t18 0 t19
+          mov   t19 _i3.1
+fi13005:
+if14005:  jge   _i1.1 _i2.1 el14005
+th14005:
+          tmp   1 int t22
+          mul   _i3.1 10 t22
+          tmp   1 int t23
+          add   t22 1 t23
+          mov   t23 _i3.1
+          jmp   fi14005
+el14005:
+          tmp   1 int t25
+          mul   _i3.1 10 t25
+          tmp   1 int t26
+          add   t25 0 t26
+          mov   t26 _i3.1
+fi14005:
+if15005:  jlt   _i1.1 _i2.1 el15005
+th15005:
+          tmp   1 int t29
+          mul   _i3.1 10 t29
+          tmp   1 int t30
+          add   t29 1 t30
+          mov   t30 _i3.1
+          jmp   fi15005
+el15005:
+          tmp   1 int t32
+          mul   _i3.1 10 t32
+          tmp   1 int t33
+          add   t32 0 t33
+          mov   t33 _i3.1
+fi15005:
+if16005:  jle   _i1.1 _i2.1 el16005
+th16005:
+          tmp   1 int t36
+          mul   _i3.1 10 t36
+          tmp   1 int t37
+          add   t36 1 t37
+          mov   t37 _i3.1
+          jmp   fi16005
+el16005:
+          tmp   1 int t39
+          mul   _i3.1 10 t39
+          tmp   1 int t40
+          add   t39 0 t40
+          mov   t40 _i3.1
+fi16005:
+if17005:  jgt   _i1.1 _i2.1 el17005
+th17005:
+          tmp   1 int t43
+          mul   _i3.1 10 t43
+          tmp   1 int t44
+          add   t43 1 t44
+          mov   t44 _i3.1
+          jmp   fi17005
+el17005:
+          tmp   1 int t46
+          mul   _i3.1 10 t46
+          tmp   1 int t47
+          add   t46 0 t47
+          mov   t47 _i3.1
+fi17005:
+          arg   0 _puti _i3.1
+          tmp   1 int t49
+          cal   1 _puti t49
+          arg   0 _putc '\n'
+          tmp   1 int t50
+          cal   1 _putc t50
+          mov   0 _i3.1
+if22005:  jne   _c1.1 _c2.1 el22005
+th22005:
+          tmp   1 int t53
+          mul   _i3.1 10 t53
+          tmp   1 int t54
+          mov   '1' t54
+          tmp   1 int t55
+          add   t53 t54 t55
+          mov   t55 _i3.1
+          jmp   fi22005
+el22005:
+          tmp   1 int t57
+          mul   _i3.1 10 t57
+          tmp   1 int t58
+          mov   '0' t58
+          tmp   1 int t59
+          add   t57 t58 t59
+          mov   t59 _i3.1
+fi22005:
+if23005:  jeq   _c1.1 _c2.1 el23005
+th23005:
+          tmp   1 int t62
+          mul   _i3.1 10 t62
+          tmp   1 int t63
+          mov   '1' t63
+          tmp   1 int t64
+          add   t62 t63 t64
+          mov   t64 _i3.1
+          jmp   fi23005
+el23005:
+          tmp   1 int t66
+          mul   _i3.1 10 t66
+          tmp   1 int t67
+          mov   '0' t67
+          tmp   1 int t68
+          add   t66 t67 t68
+          mov   t68 _i3.1
+fi23005:
+if24005:  jge   _c1.1 _c2.1 el24005
+th24005:
+          tmp   1 int t71
+          mul   _i3.1 10 t71
+          tmp   1 int t72
+          mov   '1' t72
+          tmp   1 int t73
+          add   t71 t72 t73
+          mov   t73 _i3.1
+          jmp   fi24005
+el24005:
+          tmp   1 int t75
+          mul   _i3.1 10 t75
+          tmp   1 int t76
+          mov   '0' t76
+          tmp   1 int t77
+          add   t75 t76 t77
+          mov   t77 _i3.1
+fi24005:
+if25005:  jlt   _c1.1 _c2.1 el25005
+th25005:
+          tmp   1 int t80
+          mul   _i3.1 10 t80
+          tmp   1 int t81
+          mov   '1' t81
+          tmp   1 int t82
+          add   t80 t81 t82
+          mov   t82 _i3.1
+          jmp   fi25005
+el25005:
+          tmp   1 int t84
+          mul   _i3.1 10 t84
+          tmp   1 int t85
+          mov   '0' t85
+          tmp   1 int t86
+          add   t84 t85 t86
+          mov   t86 _i3.1
+fi25005:
+if26005:  jle   _c1.1 _c2.1 el26005
+th26005:
+          tmp   1 int t89
+          mul   _i3.1 10 t89
+          tmp   1 int t90
+          mov   '1' t90
+          tmp   1 int t91
+          add   t89 t90 t91
+          mov   t91 _i3.1
+          jmp   fi26005
+el26005:
+          tmp   1 int t93
+          mul   _i3.1 10 t93
+          tmp   1 int t94
+          mov   '0' t94
+          tmp   1 int t95
+          add   t93 t94 t95
+          mov   t95 _i3.1
+fi26005:
+if27005:  jgt   _c1.1 _c2.1 el27005
+th27005:
+          tmp   1 int t98
+          mul   _i3.1 10 t98
+          tmp   1 int t99
+          mov   '1' t99
+          tmp   1 int t100
+          add   t98 t99 t100
+          mov   t100 _i3.1
+          jmp   fi27005
+el27005:
+          tmp   1 int t102
+          mul   _i3.1 10 t102
+          tmp   1 int t103
+          mov   '0' t103
+          tmp   1 int t104
+          add   t102 t103 t104
+          mov   t104 _i3.1
+fi27005:
+          arg   0 _puti _i3.1
+          tmp   1 int t106
+          cal   1 _puti t106
+          arg   0 _putc '\n'
+          tmp   1 int t107
+          cal   1 _putc t107
+	ret 0
+          xit   11
+          end
+#Icode end: 49 labels, 198 opcodes, 0 errors.

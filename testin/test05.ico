@@ -1,0 +1,153 @@
+#Icode begin_time: 1995/11/13 13:56:15 PST
+#Icode compiler_name: c0
+#Icode src_filename: test05.c0
+#Icode pfx_filename: test05
+#    1: /* $RCSfile: test05.ico,v $ $Revision: 353.1 $ */
+#    2: #include "c0-lib.h"
+#    3: 
+#    4: int overloaded; 
+#    5: 
+#    6: void func_no_params( )
+#    7: {
+#    8:    int overloaded;
+#    9:    overloaded = 3;
+#   10:    puti( overloaded );
+#   11:    puts( " no_params done\n" );
+#   12: }
+#   13: 
+#   14: int func_one_param( int only )
+#   15: {
+#   16:    int overloaded;
+#   17:    overloaded = only + 6;
+#   18:    puts( " one_param done\n" );
+#   19:    return 314159;
+#   20: }
+#   21: 
+#   22: char func_two_params( int first, int second )
+#   23: {
+#   24:    puti( first + second );
+#   25:    puts( " two_params done\n" );
+#   26:    return 'c';
+#   27: }
+#   28: 
+#   29: void func_four_params(
+#   30:       int address[], int address2[],
+#   31:       int pi_31459, char a____b____cC__Dd )
+#   32: {
+#   33: }
+#   34: 
+#   35: void star_crazy( char ***starstarstar[] )
+#   36: {
+#   37: }
+#   38: 
+#   39: int main( )
+#   40: {
+#   41:    int f; int c; char ***hisss[20];
+#   42:    func_no_params( );
+#   43:    f = func_one_param( 6 );
+#   44:    c = func_two_params( 4, 'r' );
+#   45:    func_four_params( &f, &c, f, c );
+#   46:    star_crazy( hisss );
+#   47:    return f + c;
+#   48: }
+#   49: 
+#
+          glo   1 int _overloaded
+#
+_func_no_params:
+          fnc   0 void
+          loc   1 int _overloaded.1
+          mov   3 _overloaded.1
+          arg   0 _puti _overloaded.1
+          tmp   1 int t1
+          cal   1 _puti t1
+          str   s2 "\040no_params\040done\n"
+          arg   0 _puts s2
+          tmp   1 int t3
+          cal   1 _puts t3
+          ret   void
+          end
+#
+_func_one_param:
+          fnc   1 int
+          prm   0 int _only.2
+          loc   1 int _overloaded.2
+          tmp   1 int t4
+          add   _only.2 6 t4
+          mov   t4 _overloaded.2
+          str   s6 "\040one_param\040done\n"
+          arg   0 _puts s6
+          tmp   1 int t7
+          cal   1 _puts t7
+          ret   314159
+          xit   11
+          end
+#
+_func_two_params:
+          fnc   2 char
+          prm   0 int _first.3
+          prm   1 int _second.3
+          tmp   1 int t8
+          add   _first.3 _second.3 t8
+          arg   0 _puti t8
+          tmp   1 int t9
+          cal   1 _puti t9
+          str   s10 "\040two_params\040done\n"
+          arg   0 _puts s10
+          tmp   1 int t11
+          cal   1 _puts t11
+          ret   'c'
+          xit   11
+          end
+#
+_func_four_params:
+          fnc   4 void
+          prm   0 int *_address.4
+          prm   1 int *_address2.4
+          prm   2 int _pi_31459.4
+          prm   3 char _a____b____cC__Dd.4
+          ret   void
+          end
+#
+_star_crazy:
+          fnc   1 void
+          prm   0 void *_starstarstar.5
+          ret   void
+          end
+#
+_main:    fnc   0 int
+          loc   1 int _f.6
+          loc   1 int _c.6
+          loc   20 void *_hisss.6
+          tmp   1 void t12
+          cal   0 _func_no_params t12
+          arg   0 _func_one_param 6
+          tmp   1 int t13
+          cal   1 _func_one_param t13
+          mov   t13 _f.6
+          arg   0 _func_two_params 4
+          tmp   1 int t15
+          mov   'r' t15
+          arg   1 _func_two_params t15
+          tmp   1 char t16
+          cal   2 _func_two_params t16
+          tmp   1 int t17
+          mov   t16 t17
+          mov   t17 _c.6
+          arg   0 _func_four_params &_f.6
+          arg   1 _func_four_params &_c.6
+          arg   2 _func_four_params _f.6
+          tmp   1 char t21
+          mov   _c.6 t21
+          arg   3 _func_four_params t21
+          tmp   1 void t22
+          cal   4 _func_four_params t22
+          arg   0 _star_crazy &_hisss.6
+          tmp   1 void t23
+          cal   1 _star_crazy t23
+          tmp   1 int t24
+          add   _f.6 _c.6 t24
+          ret   t24
+          xit   11
+          end
+#Icode end: 6 labels, 87 opcodes, 0 errors.

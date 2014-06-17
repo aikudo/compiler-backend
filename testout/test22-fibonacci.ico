@@ -1,0 +1,136 @@
+#Icode begin_time: 1997/02/25 17:54:14 PST
+#Icode compiler_name: c0
+#Icode src_filename: test22-fibonacci.c0
+#Icode pfx_filename: test22-fibonacci
+#    1: /* $RCSfile: test22-fibonacci.ico,v $ $Revision: 353.1 $ */
+#    2: #include "c0-lib.h"
+#    3: 
+#    4: void pad( int n )
+#    5: {
+#    6:    /* pad numbers out to align into columns */
+#    7:    int width;
+#    8:    width = 5;
+#    9:    while( width > 0 ){
+#   10:       width = width - 1;
+#   11:       n = n / 10;
+#   12:       if( n == 0 ) putc( ' ' );
+#   13:    };
+#   14: }
+#   15: 
+#   16: int main( ){
+#   17:    /* print some Fibonacci numbers */
+#   18:    int fibonacci[ 20 ];
+#   19:    int n;
+#   20:    fibonacci[0] = 0;
+#   21:    fibonacci[1] = 1;
+#   22:    n = 2;
+#   23:    while( n < 20 ){
+#   24:       fibonacci[n] = fibonacci[n-1] + fibonacci[n-2];
+#   25:       n = n + 1;
+#   26:    };
+#   27:    n = 0;
+#   28:    puts( "Numeri di figlio Bonacci\n" );
+#   29:    while( n < 20 ){
+#   30:       pad( n );
+#   31:       puti( n );
+#   32:       pad( fibonacci[n] );
+#   33:       puti( fibonacci[n] );
+#   34:       puts( "\n" );
+#   35:       n = n + 1;
+#   36:    };
+#   37: 
+#   38:    return 0;
+#   39: }
+#   40: 
+#
+#
+_pad:     fnc   1 void
+          prm   0 int _n.1
+          loc   1 int _width.1
+          mov   5 _width.1
+wh9008:   jle   _width.1 0 br9008
+lp9008:
+          tmp   1 int t2
+          sub   _width.1 1 t2
+          mov   t2 _width.1
+          tmp   1 int t4
+          div   _n.1 10 t4
+          mov   t4 _n.1
+if12008:  jne   _n.1 0 el12008
+th12008:
+          arg   0 _putc '\040'
+          tmp   1 int t7
+          cal   1 _putc t7
+el12008:
+fi12008:
+co9008:   jmp   wh9008
+br9008:
+          ret   void
+          end
+#
+_main:    fnc   0 int
+          loc   20 int _fibonacci.2
+          loc   1 int _n.2
+          tmp   1 int *t8
+          idx   &_fibonacci.2 0 t8
+          mov   0 *t8
+          tmp   1 int *t10
+          idx   &_fibonacci.2 1 t10
+          mov   1 *t10
+          mov   2 _n.2
+wh23008:  jge   _n.2 20 br23008
+lp23008:
+          tmp   1 int *t14
+          idx   &_fibonacci.2 _n.2 t14
+          tmp   1 int t15
+          sub   _n.2 1 t15
+          tmp   1 int *t16
+          idx   &_fibonacci.2 t15 t16
+          tmp   1 int t17
+          sub   _n.2 2 t17
+          tmp   1 int *t18
+          idx   &_fibonacci.2 t17 t18
+          tmp   1 int t19
+          add   *t16 *t18 t19
+          mov   t19 *t14
+          tmp   1 int t21
+          add   _n.2 1 t21
+          mov   t21 _n.2
+co23008:  jmp   wh23008
+br23008:
+          mov   0 _n.2
+          str   s24 "Numeri\040di\040figlio\040Bonacci\n"
+          arg   0 _puts s24
+          tmp   1 int t25
+          cal   1 _puts t25
+wh29008:  jge   _n.2 20 br29008
+lp29008:
+          arg   0 _pad _n.2
+          tmp   1 void t27
+          cal   1 _pad t27
+          arg   0 _puti _n.2
+          tmp   1 int t28
+          cal   1 _puti t28
+          tmp   1 int *t29
+          idx   &_fibonacci.2 _n.2 t29
+          arg   0 _pad *t29
+          tmp   1 void t30
+          cal   1 _pad t30
+          tmp   1 int *t31
+          idx   &_fibonacci.2 _n.2 t31
+          arg   0 _puti *t31
+          tmp   1 int t32
+          cal   1 _puti t32
+          str   s33 "\n"
+          arg   0 _puts s33
+          tmp   1 int t34
+          cal   1 _puts t34
+          tmp   1 int t35
+          add   _n.2 1 t35
+          mov   t35 _n.2
+co29008:  jmp   wh29008
+br29008:
+          ret   0
+          xit   11
+          end
+#Icode end: 18 labels, 79 opcodes, 0 errors.

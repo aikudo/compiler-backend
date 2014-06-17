@@ -1,0 +1,214 @@
+#Icode begin_time: 1997/02/25 17:54:17 PST
+#Icode compiler_name: c0
+#Icode src_filename: test52-misc.c0
+#Icode pfx_filename: test52-misc
+#    1: 
+#    2: int inner_product (int len,
+#    3:          int in_vector1[],
+#    4:          int in_vector2[])
+#    5: {
+#    6:    int i;
+#    7:    int sum;
+#    8: 
+#    9:    i = 0;
+#   10:    sum = 0;
+#   11: 
+#   12:    while (i < len)
+#   13:    {
+#   14:       sum = sum + in_vector1[ i ] * in_vector2[ i ];
+#   15:       i = i + 1;
+#   16:    }
+#   17: 
+#   18:    return sum;
+#   19: }
+#   20: 
+#   21: void time_killer (int outer, int inner)
+#   22: {
+#   23:    int i;
+#   24:    int j;
+#   25:    int vec1[100];
+#   26:    int vec2[100];
+#   27: 
+#   28:    i = 0;
+#   29:    j = 0;
+#   30: 
+#   31:    while (i < outer)
+#   32:    {
+#   33:       while (j < inner)
+#   34:       {
+#   35:          j = j + 1;
+#   36:       }
+#   37:    }
+#   38: }
+#   39: 
+#   40: void swap (int *int_ptr1, int *int_ptr2)
+#   41: {
+#   42:    int temp;
+#   43: 
+#   44:    temp = *int_ptr1;
+#   45:    *int_ptr1 = *int_ptr2;
+#   46:    *int_ptr2 = temp;
+#   47: }
+#   48: 
+#   49: 
+#   50: int main (int argc, char **argv)
+#   51: {
+#   52:    char digit;
+#   53:    int len;
+#   54:    int v1[10];
+#   55:    int v2[10];
+#   56:    int ret_val;
+#   57:    int *int_ptr;
+#   58: 
+#   59:    if (argc == 3)
+#   60:    {
+#   61:       digit = **(argv + 1);
+#   62: 
+#   63:       len = digit - '0';
+#   64: 
+#   65:       if (len >= 0)
+#   66:          if (len <= 9)
+#   67:             ret_val = inner_product (len, v1, v2);
+#   68:          else
+#   69:          {
+#   70:          }
+#   71:       else
+#   72:       {
+#   73:       }
+#   74:    }
+#   75:    else
+#   76:    {
+#   77:       swap (&(v1[0]), &(v2[0]));
+#   78:    }
+#   79:    return 0;
+#   80: }
+#   81: 
+#
+#
+_inner_product:
+          fnc   3 int
+          prm   0 int _len.1
+          prm   1 int *_in_vector1.1
+          prm   2 int *_in_vector2.1
+          loc   1 int _i.1
+          loc   1 int _sum.1
+          mov   0 _i.1
+          mov   0 _sum.1
+wh12008:  jge   _i.1 _len.1 br12008
+lp12008:
+          tmp   1 int *t3
+          idx   _in_vector1.1 _i.1 t3
+          tmp   1 int *t4
+          idx   _in_vector2.1 _i.1 t4
+          tmp   1 int t5
+          mul   *t3 *t4 t5
+          tmp   1 int t6
+          add   _sum.1 t5 t6
+          mov   t6 _sum.1
+          tmp   1 int t8
+          add   _i.1 1 t8
+          mov   t8 _i.1
+co12008:  jmp   wh12008
+br12008:
+          ret   _sum.1
+          xit   11
+          end
+#
+_time_killer:
+          fnc   2 void
+          prm   0 int _outer.2
+          prm   1 int _inner.2
+          loc   1 int _i.2
+          loc   1 int _j.2
+          loc   100 int _vec1.2
+          loc   100 int _vec2.2
+          mov   0 _i.2
+          mov   0 _j.2
+wh31008:  jge   _i.2 _outer.2 br31008
+lp31008:
+wh33011:  jge   _j.2 _inner.2 br33011
+lp33011:
+          tmp   1 int t14
+          add   _j.2 1 t14
+          mov   t14 _j.2
+co33011:  jmp   wh33011
+br33011:
+co31008:  jmp   wh31008
+br31008:
+          ret   void
+          end
+#
+_swap:    fnc   2 void
+          prm   0 int *_int_ptr1.3
+          prm   1 int *_int_ptr2.3
+          loc   1 int _temp.3
+          tmp   1 int *t16
+          mov   _int_ptr1.3 t16
+          mov   *t16 _temp.3
+          tmp   1 int *t18
+          mov   _int_ptr1.3 t18
+          tmp   1 int *t19
+          mov   _int_ptr2.3 t19
+          mov   *t19 *t18
+          tmp   1 int *t21
+          mov   _int_ptr2.3 t21
+          mov   _temp.3 *t21
+          ret   void
+          end
+#
+_main:    fnc   2 int
+          prm   0 int _argc.4
+          prm   1 void *_argv.4
+          loc   1 char _digit.4
+          loc   1 int _len.4
+          loc   10 int _v1.4
+          loc   10 int _v2.4
+          loc   1 int _ret_val.4
+          loc   1 int *_int_ptr.4
+if59005:  jne   _argc.4 3 el59005
+th59005:
+          tmp   1 int t24
+          mov   _argv.4 t24
+          tmp   1 int t25
+          add   t24 1 t25
+          tmp   1 ERROR *t26
+          mov   t25 t26
+          tmp   1 ERROR *t27
+          mov   *t26 t27
+          mov   *t27 _digit.4
+          tmp   1 char t29
+          sub   _digit.4 '0' t29
+          tmp   1 int t30
+          mov   t29 t30
+          mov   t30 _len.4
+if65008:  jlt   _len.4 0 el65008
+th65008:
+if66011:  jgt   _len.4 9 el66011
+th66011:
+          arg   0 _inner_product _len.4
+          arg   1 _inner_product &_v1.4
+          arg   2 _inner_product &_v2.4
+          tmp   1 int t34
+          cal   3 _inner_product t34
+          mov   t34 _ret_val.4
+          jmp   fi66011
+el66011:
+fi66011:
+          jmp   fi65008
+el65008:
+fi65008:
+          jmp   fi59005
+el59005:
+          tmp   1 int *t36
+          idx   &_v1.4 0 t36
+          tmp   1 int *t38
+          idx   &_v2.4 0 t38
+          arg   0 _swap t36
+          arg   1 _swap t38
+          tmp   1 void t40
+          cal   2 _swap t40
+fi59005:
+          ret   0
+          xit   11
+          end
+#Icode end: 28 labels, 106 opcodes, 0 errors.

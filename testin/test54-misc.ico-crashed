@@ -1,0 +1,36 @@
+#Icode begin_time: 1997/02/25 17:54:19 PST
+#Icode compiler_name: c0
+#Icode src_filename: test54-misc.c0
+#Icode pfx_filename: test54-misc
+#    1: 
+#    2: /* This one has a blatant error */
+#    3: #include "c0_lib.h"
+#    4: int global_array[ 18 ];
+#    5: int i;
+#    6: 
+#    7: int main ()
+#    8: {
+#    9:    int redef;
+#   10:    int i;
+#   11:    int *int_ptr;
+#   12:    int redef;
+#   13: 
+#   14:    int_ptr = &i;
+#   15:    i = int_ptr * int_ptr;
+#   16:    i = int_ptr;
+#   17:    i = undeclared_variable;
+#   18: 
+#   19:    global_array[ 1 ] = 23;
+#   20:    int_ptr = global_array;
+#   21:    puti (int_ptr[ 1 ]);
+#   22:    return 0;
+#   23: }
+#   24: 
+#
+          glo   18 int _global_array
+          glo   1 int _i
+#
+_main:    fnc   0 int
+          loc   1 int _redef.1
+          loc   1 int _i.1
+          loc   1 int *_int_ptr.1
