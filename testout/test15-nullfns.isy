@@ -1,0 +1,69 @@
+ Global variables:
+   name                      type   dim   size  align base     disp  reg   
+---------------------------------------------------------------------------
+===========================================================================
+ String constants:
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _xexit                    int    4     0     0     96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _n.1                      int    ?     4     4     %fp      +68   %i0 
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _xgetc                    int    4     0     0     96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _c.2                      char*  ?     4     4     %fp      +68   %i0 
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _xgeti                    int    4     0     0     96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _i.3                      int*   ?     4     4     %fp      +68   %i0 
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _xgets                    int    4     0     0     96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _s.4                      char*  ?     4     4     %fp      +68   %i0 
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _xputc                    int    1     0     0     96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _c.5                      char   ?     1     1     %fp      +68   %i0 
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _xputi                    int    4     0     0     96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _i.6                      int    ?     4     4     %fp      +68   %i0 
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _xputp                    int    4     0     0     96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _p.7                      void*  ?     4     4     %fp      +68   %i0 
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _xputs                    int    4     0     0     96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _s.8                      char*  ?     4     4     %fp      +68   %i0 

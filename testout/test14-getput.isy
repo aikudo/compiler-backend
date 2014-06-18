@@ -1,0 +1,32 @@
+ Global variables:
+   name                      type   dim   size  align base     disp  reg   
+S  s20                       char[] S     1     1     G          0   ?   
+S  s23                       char[] S     1     1     G          0   ?   
+---------------------------------------------------------------------------
+===========================================================================
+ String constants:
+   s20             "\nHello,\040world!\n"                       
+   s23             "\nHello,\040world!\n"                       
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _main                     int    0     513   44    610   
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+L  _c.1                      char   ?     1     1     %fp       -1   ?   
+L  _i.1                      int    ?     4     4     %fp       -5   ?   
+L  _s.1                      char[] 500   1     1     %fp     -505   ?   
+L  _eof.1                    int    ?     4     4     %fp     -509   ?   
+L  _len.1                    int    ?     4     4     %fp     -513   ?   
+T  t1                        int    ?     4     4     ?          ?   t   
+T  t4                        int    ?     4     4     ?          ?   t   
+T  t6                        int    ?     4     4     ?          ?   t   
+T  t8                        int    ?     4     4     ?          ?   t   
+T  t10                       int    ?     4     4     ?          ?   t   
+T  t12                       int    ?     4     4     ?          ?   t   
+T  t14                       int    ?     4     4     ?          ?   t   
+T  t16                       int    ?     4     4     ?          ?   t   
+T  t18                       int    ?     4     4     ?          ?   t   
+T  t21                       int    ?     4     4     ?          ?   t   
+T  t24                       int    ?     4     4     ?          ?   t   

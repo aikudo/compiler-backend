@@ -1,0 +1,58 @@
+ Global variables:
+   name                      type   dim   size  align base     disp  reg   
+S  s13                       char[] S     1     1     G          0   ?   
+S  s19                       char[] S     1     1     G          0   ?   
+S  s22                       char[] S     1     1     G          0   ?   
+S  s25                       char[] S     1     1     G          0   ?   
+S  s27                       char[] S     1     1     G          0   ?   
+S  s30                       char[] S     1     1     G          0   ?   
+S  s33                       char[] S     1     1     G          0   ?   
+---------------------------------------------------------------------------
+===========================================================================
+ String constants:
+   s13             "pi="                                        
+   s19             "one\040is\040true\n"                        
+   s22             "zero\040is\040true\n"                       
+   s25             "if\040then\040else\040is\040true\n"         
+   s27             "if\040then\040else\040is\040false\n"        
+   s30             "This\040is\040harder\040to\040optimize.\n"  
+   s33             "This\040statement\040should\040never\040be\040printed.\n"
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _pi                       int    0     0     40    96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+T  t0                        int    ?     4     4     ?          ?   t   
+T  t1                        int    ?     4     4     ?          ?   t   
+T  t2                        int    ?     4     4     ?          ?   t   
+T  t3                        int    ?     4     4     ?          ?   t   
+T  t4                        int    ?     4     4     ?          ?   t   
+T  t5                        int    ?     4     4     ?          ?   t   
+T  t6                        int    ?     4     4     ?          ?   t   
+T  t7                        int    ?     4     4     ?          ?   t   
+T  t8                        int    ?     4     4     ?          ?   t   
+T  t9                        int    ?     4     4     ?          ?   t   
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _main                     int    8     12    40    104   
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _argc.2                   int    ?     4     4     %fp      +68   %i0 
+P  _argv.2                   void*  ?     4     4     %fp      +72   %i1 
+L  _yes.2                    int    ?     4     4     %fp       -4   ?   
+L  _zero.2                   int    ?     4     4     %fp       -8   ?   
+L  _NULL.2                   int    ?     4     4     %fp      -12   ?   
+T  t14                       int    ?     4     4     ?          ?   t   
+T  t15                       int    ?     4     4     ?          ?   t   
+T  t16                       int    ?     4     4     ?          ?   t   
+T  t17                       int    ?     4     4     ?          ?   t   
+T  t20                       int    ?     4     4     ?          ?   t   
+T  t23                       int    ?     4     4     ?          ?   t   
+T  t26                       int    ?     4     4     ?          ?   t   
+T  t28                       int    ?     4     4     ?          ?   t   
+T  t31                       int    ?     4     4     ?          ?   t   
+T  t34                       int    ?     4     4     ?          ?   t   

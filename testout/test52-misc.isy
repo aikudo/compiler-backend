@@ -1,0 +1,75 @@
+ Global variables:
+   name                      type   dim   size  align base     disp  reg   
+---------------------------------------------------------------------------
+===========================================================================
+ String constants:
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _inner_product            int    12    8     20    104   
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _len.1                    int    ?     4     4     %fp      +68   %i0 
+P  _in_vector1.1             int*   ?     4     4     %fp      +72   %i1 
+P  _in_vector2.1             int*   ?     4     4     %fp      +76   %i2 
+L  _i.1                      int    ?     4     4     %fp       -4   ?   
+L  _sum.1                    int    ?     4     4     %fp       -8   ?   
+T  t3                        int*   ?     4     4     ?          ?   t   
+T  t4                        int*   ?     4     4     ?          ?   t   
+T  t5                        int    ?     4     4     ?          ?   t   
+T  t6                        int    ?     4     4     ?          ?   t   
+T  t8                        int    ?     4     4     ?          ?   t   
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _time_killer              void   8     808   4     904   
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _outer.2                  int    ?     4     4     %fp      +68   %i0 
+P  _inner.2                  int    ?     4     4     %fp      +72   %i1 
+L  _i.2                      int    ?     4     4     %fp       -4   ?   
+L  _j.2                      int    ?     4     4     %fp       -8   ?   
+L  _vec1.2                   int[]  100   4     4     %fp     -408   ?   
+L  _vec2.2                   int[]  100   4     4     %fp     -808   ?   
+T  t14                       int    ?     4     4     ?          ?   t   
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _swap                     void   8     4     16    96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _int_ptr1.3               int*   ?     4     4     %fp      +68   %i0 
+P  _int_ptr2.3               int*   ?     4     4     %fp      +72   %i1 
+L  _temp.3                   int    ?     4     4     %fp       -4   ?   
+T  t16                       int*   ?     4     4     ?          ?   t   
+T  t18                       int*   ?     4     4     ?          ?   t   
+T  t19                       int*   ?     4     4     ?          ?   t   
+T  t21                       int*   ?     4     4     ?          ?   t   
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _main                     int    8     93    29    186   
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _argc.4                   int    ?     4     4     %fp      +68   %i0 
+P  _argv.4                   void*  ?     4     4     %fp      +72   %i1 
+L  _digit.4                  char   ?     1     1     %fp       -1   ?   
+L  _len.4                    int    ?     4     4     %fp       -5   ?   
+L  _v1.4                     int[]  10    4     4     %fp      -45   ?   
+L  _v2.4                     int[]  10    4     4     %fp      -85   ?   
+L  _ret_val.4                int    ?     4     4     %fp      -89   ?   
+L  _int_ptr.4                int*   ?     4     4     %fp      -93   ?   
+T  t24                       int    ?     4     4     ?          ?   t   
+T  t25                       int    ?     4     4     ?          ?   t   
+T  t26                       ERROR* ?                 ?          ?   t   
+T  t27                       ERROR* ?                 ?          ?   t   
+T  t29                       char   ?     1     1     ?          ?   t   
+T  t30                       int    ?     4     4     ?          ?   t   
+T  t34                       int    ?     4     4     ?          ?   t   
+T  t36                       int*   ?     4     4     ?          ?   t   
+T  t38                       int*   ?     4     4     ?          ?   t   
+T  t40                       void   ?     4     4     ?          ?   t   

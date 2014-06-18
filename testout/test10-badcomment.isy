@@ -1,0 +1,9 @@
+ Global variables:
+   name                      type   dim   size  align base     disp  reg   
+---------------------------------------------------------------------------
+G  _foo                      char*  ?     4     4     G          0   ?   
+G  _bar                      void*  ?     4     4     G          0   ?   
+G  _baz                      void*  ?     4     4     G          0   ?   
+G  _quux                     void*  ?     4     4     G          0   ?   
+===========================================================================
+ String constants:

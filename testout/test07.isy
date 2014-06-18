@@ -1,0 +1,65 @@
+ Global variables:
+   name                      type   dim   size  align base     disp  reg   
+---------------------------------------------------------------------------
+===========================================================================
+ String constants:
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _main                     int    0     45    119   138   
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+L  _i2.1                     int    ?     4     4     %fp       -4   ?   
+L  _i3.1                     int    ?     4     4     %fp       -8   ?   
+L  _ia.1                     int    ?     4     4     %fp      -12   ?   
+L  _is.1                     int    ?     4     4     %fp      -16   ?   
+L  _im.1                     int    ?     4     4     %fp      -20   ?   
+L  _id.1                     int    ?     4     4     %fp      -24   ?   
+L  _ir.1                     int    ?     4     4     %fp      -28   ?   
+L  _ip.1                     int    ?     4     4     %fp      -32   ?   
+L  _in.1                     int    ?     4     4     %fp      -36   ?   
+L  _c2.1                     char   ?     1     1     %fp      -37   ?   
+L  _c3.1                     char   ?     1     1     %fp      -38   ?   
+L  _ca.1                     char   ?     1     1     %fp      -39   ?   
+L  _cs.1                     char   ?     1     1     %fp      -40   ?   
+L  _cm.1                     char   ?     1     1     %fp      -41   ?   
+L  _cd.1                     char   ?     1     1     %fp      -42   ?   
+L  _cr.1                     char   ?     1     1     %fp      -43   ?   
+L  _cp.1                     char   ?     1     1     %fp      -44   ?   
+L  _cn.1                     char   ?     1     1     %fp      -45   ?   
+T  t4                        int    ?     4     4     ?          ?   t   
+T  t6                        int    ?     4     4     ?          ?   t   
+T  t7                        int    ?     4     4     ?          ?   t   
+T  t9                        int    ?     4     4     ?          ?   t   
+T  t10                       int    ?     4     4     ?          ?   t   
+T  t12                       int    ?     4     4     ?          ?   t   
+T  t13                       int    ?     4     4     ?          ?   t   
+T  t15                       int    ?     4     4     ?          ?   t   
+T  t16                       int    ?     4     4     ?          ?   t   
+T  t18                       int    ?     4     4     ?          ?   t   
+T  t19                       int    ?     4     4     ?          ?   t   
+T  t21                       int    ?     4     4     ?          ?   t   
+T  t22                       int    ?     4     4     ?          ?   t   
+T  t24                       int    ?     4     4     ?          ?   t   
+T  t25                       char   ?     1     1     ?          ?   t   
+T  t27                       int    ?     4     4     ?          ?   t   
+T  t28                       int    ?     4     4     ?          ?   t   
+T  t29                       char   ?     1     1     ?          ?   t   
+T  t31                       int    ?     4     4     ?          ?   t   
+T  t32                       int    ?     4     4     ?          ?   t   
+T  t33                       char   ?     1     1     ?          ?   t   
+T  t35                       int    ?     4     4     ?          ?   t   
+T  t36                       int    ?     4     4     ?          ?   t   
+T  t37                       char   ?     1     1     ?          ?   t   
+T  t39                       int    ?     4     4     ?          ?   t   
+T  t40                       int    ?     4     4     ?          ?   t   
+T  t41                       char   ?     1     1     ?          ?   t   
+T  t43                       int    ?     4     4     ?          ?   t   
+T  t44                       int    ?     4     4     ?          ?   t   
+T  t45                       char   ?     1     1     ?          ?   t   
+T  t47                       int    ?     4     4     ?          ?   t   
+T  t48                       int    ?     4     4     ?          ?   t   
+T  t49                       char   ?     1     1     ?          ?   t   
+T  t51                       int    ?     4     4     ?          ?   t   
+T  t52                       int    ?     4     4     ?          ?   t   

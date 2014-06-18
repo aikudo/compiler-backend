@@ -1,0 +1,83 @@
+ Global variables:
+   name                      type   dim   size  align base     disp  reg   
+S  s2                        char[] S     1     1     G          0   ?   
+S  s6                        char[] S     1     1     G          0   ?   
+S  s10                       char[] S     1     1     G          0   ?   
+---------------------------------------------------------------------------
+G  _overloaded               int    ?     4     4     G          0   ?   
+===========================================================================
+ String constants:
+   s2              "\040no_params\040done\n"                    
+   s6              "\040one_param\040done\n"                    
+   s10             "\040two_params\040done\n"                   
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _func_no_params           void   0     4     8     96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+L  _overloaded.1             int    ?     4     4     %fp       -4   ?   
+T  t1                        int    ?     4     4     ?          ?   t   
+T  t3                        int    ?     4     4     ?          ?   t   
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _func_one_param           int    4     4     8     96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _only.2                   int    ?     4     4     %fp      +68   %i0 
+L  _overloaded.2             int    ?     4     4     %fp       -4   ?   
+T  t4                        int    ?     4     4     ?          ?   t   
+T  t7                        int    ?     4     4     ?          ?   t   
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _func_two_params          char   8     0     12    96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _first.3                  int    ?     4     4     %fp      +68   %i0 
+P  _second.3                 int    ?     4     4     %fp      +72   %i1 
+T  t8                        int    ?     4     4     ?          ?   t   
+T  t9                        int    ?     4     4     ?          ?   t   
+T  t11                       int    ?     4     4     ?          ?   t   
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _func_four_params         void   13    0     0     96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _address.4                int*   ?     4     4     %fp      +68   %i0 
+P  _address2.4               int*   ?     4     4     %fp      +72   %i1 
+P  _pi_31459.4               int    ?     4     4     %fp      +76   %i2 
+P  _a____b____cC__Dd.4       char   ?     1     1     %fp      +80   %i3 
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _star_crazy               void   4     0     0     96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _starstarstar.5           void*  ?     4     4     %fp      +68   %i0 
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _main                     int    0     88    30    184   
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+L  _f.6                      int    ?     4     4     %fp       -4   ?   
+L  _c.6                      int    ?     4     4     %fp       -8   ?   
+L  _hisss.6                  void*  20    4     4     %fp      -88   ?   
+T  t12                       void   ?     4     4     ?          ?   t   
+T  t13                       int    ?     4     4     ?          ?   t   
+T  t15                       int    ?     4     4     ?          ?   t   
+T  t16                       char   ?     1     1     ?          ?   t   
+T  t17                       int    ?     4     4     ?          ?   t   
+T  t21                       char   ?     1     1     ?          ?   t   
+T  t22                       void   ?     4     4     ?          ?   t   
+T  t23                       void   ?     4     4     ?          ?   t   
+T  t24                       int    ?     4     4     ?          ?   t   

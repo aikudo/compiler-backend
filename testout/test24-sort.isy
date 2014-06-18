@@ -1,0 +1,51 @@
+ Global variables:
+   name                      type   dim   size  align base     disp  reg   
+S  s39                       char[] S     1     1     G          0   ?   
+---------------------------------------------------------------------------
+===========================================================================
+ String constants:
+   s39             ":\040"                                      
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _selection_sort           void   8     16    36    112   
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _array.1                  int*   ?     4     4     %fp      +68   %i0 
+P  _dimension.1              int    ?     4     4     %fp      +72   %i1 
+L  _outer.1                  int    ?     4     4     %fp       -4   ?   
+L  _inner.1                  int    ?     4     4     %fp       -8   ?   
+L  _maxpos.1                 int    ?     4     4     %fp      -12   ?   
+L  _swap.1                   int    ?     4     4     %fp      -16   ?   
+T  t0                        int    ?     4     4     ?          ?   t   
+T  t6                        int*   ?     4     4     ?          ?   t   
+T  t7                        int*   ?     4     4     ?          ?   t   
+T  t10                       int    ?     4     4     ?          ?   t   
+T  t13                       int*   ?     4     4     ?          ?   t   
+T  t15                       int*   ?     4     4     ?          ?   t   
+T  t16                       int*   ?     4     4     ?          ?   t   
+T  t18                       int*   ?     4     4     ?          ?   t   
+T  t20                       int    ?     4     4     ?          ?   t   
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _main                     int    0     116   40    208   
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+L  _array.2                  int[]  25    4     4     %fp     -100   ?   
+L  _count.2                  int    ?     4     4     %fp     -104   ?   
+L  _num.2                    int    ?     4     4     %fp     -108   ?   
+L  _done.2                   int    ?     4     4     %fp     -112   ?   
+L  _index.2                  int    ?     4     4     %fp     -116   ?   
+T  t28                       int    ?     4     4     ?          ?   t   
+T  t31                       int*   ?     4     4     ?          ?   t   
+T  t33                       int    ?     4     4     ?          ?   t   
+T  t35                       void   ?     4     4     ?          ?   t   
+T  t38                       int    ?     4     4     ?          ?   t   
+T  t40                       int    ?     4     4     ?          ?   t   
+T  t41                       int*   ?     4     4     ?          ?   t   
+T  t42                       int    ?     4     4     ?          ?   t   
+T  t43                       int    ?     4     4     ?          ?   t   
+T  t44                       int    ?     4     4     ?          ?   t   

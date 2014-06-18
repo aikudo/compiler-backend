@@ -1,0 +1,19 @@
+ Global variables:
+   name                      type   dim   size  align base     disp  reg   
+S  s0                        char[] S     1     1     G          0   ?   
+---------------------------------------------------------------------------
+===========================================================================
+ String constants:
+   s0              "Hello,\040World.\n"                         
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _main                     int    0     0     20    96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+T  t1                        int    ?     4     4     ?          ?   t   
+T  t2                        int    ?     4     4     ?          ?   t   
+T  t3                        int    ?     4     4     ?          ?   t   
+T  t4                        int    ?     4     4     ?          ?   t   
+T  t5                        int    ?     4     4     ?          ?   t   

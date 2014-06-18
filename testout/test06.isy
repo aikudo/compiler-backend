@@ -1,0 +1,48 @@
+ Global variables:
+   name                      type   dim   size  align base     disp  reg   
+S  s24                       char[] S     1     1     G          0   ?   
+S  s33                       char[] S     1     1     G          0   ?   
+---------------------------------------------------------------------------
+===========================================================================
+ String constants:
+   s24             "Numeri\040di\040figlio\040Bonacci\n"        
+   s33             "\n"                                         
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _pad                      void   4     4     12    96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _n.1                      int    ?     4     4     %fp      +68   %i0 
+L  _width.1                  int    ?     4     4     %fp       -4   ?   
+T  t2                        int    ?     4     4     ?          ?   t   
+T  t4                        int    ?     4     4     ?          ?   t   
+T  t7                        int    ?     4     4     ?          ?   t   
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _main                     int    0     84    72    176   
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+L  _fibonacci.2              int[]  20    4     4     %fp      -80   ?   
+L  _n.2                      int    ?     4     4     %fp      -84   ?   
+T  t8                        int*   ?     4     4     ?          ?   t   
+T  t10                       int*   ?     4     4     ?          ?   t   
+T  t14                       int*   ?     4     4     ?          ?   t   
+T  t15                       int    ?     4     4     ?          ?   t   
+T  t16                       int*   ?     4     4     ?          ?   t   
+T  t17                       int    ?     4     4     ?          ?   t   
+T  t18                       int*   ?     4     4     ?          ?   t   
+T  t19                       int    ?     4     4     ?          ?   t   
+T  t21                       int    ?     4     4     ?          ?   t   
+T  t25                       int    ?     4     4     ?          ?   t   
+T  t27                       void   ?     4     4     ?          ?   t   
+T  t28                       int    ?     4     4     ?          ?   t   
+T  t29                       int*   ?     4     4     ?          ?   t   
+T  t30                       void   ?     4     4     ?          ?   t   
+T  t31                       int*   ?     4     4     ?          ?   t   
+T  t32                       int    ?     4     4     ?          ?   t   
+T  t34                       int    ?     4     4     ?          ?   t   
+T  t35                       int    ?     4     4     ?          ?   t   

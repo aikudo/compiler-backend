@@ -1,0 +1,45 @@
+ Global variables:
+   name                      type   dim   size  align base     disp  reg   
+S  s20                       char[] S     1     1     G          0   ?   
+S  s23                       char[] S     1     1     G          0   ?   
+---------------------------------------------------------------------------
+G  _global_int               int    ?     4     4     G          0   ?   
+G  _global_array             int[]  99    4     4     G          0   ?   
+G  _many_times               int    ?     4     4     G          0   ?   
+===========================================================================
+ String constants:
+   s20             "\040=\040"                                  
+   s23             "!\n"                                        
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _mul_int                  void   8     4     12    96    
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+P  _number.1                 int*   ?     4     4     %fp      +68   %i0 
+P  _int_num.1                int    ?     4     4     %fp      +72   %i1 
+L  _many_times.1             int    ?     4     4     %fp       -4   ?   
+T  t0                        int*   ?     4     4     ?          ?   t   
+T  t1                        int*   ?     4     4     ?          ?   t   
+T  t2                        int    ?     4     4     ?          ?   t   
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _main                     int    0     12    40    104   
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+L  _counter.2                int    ?     4     4     %fp       -4   ?   
+L  _factorial.2              int    ?     4     4     %fp       -8   ?   
+L  _many_times.2             int    ?     4     4     %fp      -12   ?   
+T  t9                        int    ?     4     4     ?          ?   t   
+T  t11                       int    ?     4     4     ?          ?   t   
+T  t12                       int    ?     4     4     ?          ?   t   
+T  t15                       void   ?     4     4     ?          ?   t   
+T  t16                       int*   ?     4     4     ?          ?   t   
+T  t19                       int    ?     4     4     ?          ?   t   
+T  t21                       int    ?     4     4     ?          ?   t   
+T  t22                       int    ?     4     4     ?          ?   t   
+T  t24                       int    ?     4     4     ?          ?   t   
+T  t25                       int    ?     4     4     ?          ?   t   

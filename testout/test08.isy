@@ -1,0 +1,83 @@
+ Global variables:
+   name                      type   dim   size  align base     disp  reg   
+---------------------------------------------------------------------------
+===========================================================================
+ String constants:
+
+
+---------------------------------------------------------------------------
+   Function                  return param local temp  frame 
+   _main                     int    0     15    257   110   
+===========================================================================
+   name                      type   dim   size  align base     disp  reg   
+L  _i1.1                     int    ?     4     4     %fp       -4   ?   
+L  _i2.1                     int    ?     4     4     %fp       -8   ?   
+L  _i3.1                     int    ?     4     4     %fp      -12   ?   
+L  _c1.1                     char   ?     1     1     %fp      -13   ?   
+L  _c2.1                     char   ?     1     1     %fp      -14   ?   
+L  _c3.1                     char   ?     1     1     %fp      -15   ?   
+T  t5                        char   ?     1     1     ?          ?   t   
+T  t8                        int    ?     4     4     ?          ?   t   
+T  t9                        int    ?     4     4     ?          ?   t   
+T  t11                       int    ?     4     4     ?          ?   t   
+T  t12                       int    ?     4     4     ?          ?   t   
+T  t15                       int    ?     4     4     ?          ?   t   
+T  t16                       int    ?     4     4     ?          ?   t   
+T  t18                       int    ?     4     4     ?          ?   t   
+T  t19                       int    ?     4     4     ?          ?   t   
+T  t22                       int    ?     4     4     ?          ?   t   
+T  t23                       int    ?     4     4     ?          ?   t   
+T  t25                       int    ?     4     4     ?          ?   t   
+T  t26                       int    ?     4     4     ?          ?   t   
+T  t29                       int    ?     4     4     ?          ?   t   
+T  t30                       int    ?     4     4     ?          ?   t   
+T  t32                       int    ?     4     4     ?          ?   t   
+T  t33                       int    ?     4     4     ?          ?   t   
+T  t36                       int    ?     4     4     ?          ?   t   
+T  t37                       int    ?     4     4     ?          ?   t   
+T  t39                       int    ?     4     4     ?          ?   t   
+T  t40                       int    ?     4     4     ?          ?   t   
+T  t43                       int    ?     4     4     ?          ?   t   
+T  t44                       int    ?     4     4     ?          ?   t   
+T  t46                       int    ?     4     4     ?          ?   t   
+T  t47                       int    ?     4     4     ?          ?   t   
+T  t49                       int    ?     4     4     ?          ?   t   
+T  t50                       int    ?     4     4     ?          ?   t   
+T  t53                       int    ?     4     4     ?          ?   t   
+T  t54                       int    ?     4     4     ?          ?   t   
+T  t55                       int    ?     4     4     ?          ?   t   
+T  t57                       int    ?     4     4     ?          ?   t   
+T  t58                       int    ?     4     4     ?          ?   t   
+T  t59                       int    ?     4     4     ?          ?   t   
+T  t62                       int    ?     4     4     ?          ?   t   
+T  t63                       int    ?     4     4     ?          ?   t   
+T  t64                       int    ?     4     4     ?          ?   t   
+T  t66                       int    ?     4     4     ?          ?   t   
+T  t67                       int    ?     4     4     ?          ?   t   
+T  t68                       int    ?     4     4     ?          ?   t   
+T  t71                       int    ?     4     4     ?          ?   t   
+T  t72                       int    ?     4     4     ?          ?   t   
+T  t73                       int    ?     4     4     ?          ?   t   
+T  t75                       int    ?     4     4     ?          ?   t   
+T  t76                       int    ?     4     4     ?          ?   t   
+T  t77                       int    ?     4     4     ?          ?   t   
+T  t80                       int    ?     4     4     ?          ?   t   
+T  t81                       int    ?     4     4     ?          ?   t   
+T  t82                       int    ?     4     4     ?          ?   t   
+T  t84                       int    ?     4     4     ?          ?   t   
+T  t85                       int    ?     4     4     ?          ?   t   
+T  t86                       int    ?     4     4     ?          ?   t   
+T  t89                       int    ?     4     4     ?          ?   t   
+T  t90                       int    ?     4     4     ?          ?   t   
+T  t91                       int    ?     4     4     ?          ?   t   
+T  t93                       int    ?     4     4     ?          ?   t   
+T  t94                       int    ?     4     4     ?          ?   t   
+T  t95                       int    ?     4     4     ?          ?   t   
+T  t98                       int    ?     4     4     ?          ?   t   
+T  t99                       int    ?     4     4     ?          ?   t   
+T  t100                      int    ?     4     4     ?          ?   t   
+T  t102                      int    ?     4     4     ?          ?   t   
+T  t103                      int    ?     4     4     ?          ?   t   
+T  t104                      int    ?     4     4     ?          ?   t   
+T  t106                      int    ?     4     4     ?          ?   t   
+T  t107                      int    ?     4     4     ?          ?   t   
